@@ -1,4 +1,4 @@
-package com.sundolls.epbackend.config.filter;
+package com.sundolls.epbackend.filter;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;

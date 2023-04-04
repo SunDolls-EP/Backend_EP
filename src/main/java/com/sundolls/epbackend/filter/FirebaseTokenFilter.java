@@ -34,7 +34,7 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
         FirebaseToken decodedToken;
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
-            setUnauthorizedResponse(response, "INVAILD_HEADER");
+            setUnauthorizedResponse(response, "INVALID_HEADER");
             return;
         }
         String token = header.substring(7);

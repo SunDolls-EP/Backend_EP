@@ -23,14 +23,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public User register(String authorization, UserDto userDto){
-        FirebaseToken decodedToken;
-        try {
-            String token = RequestUtil.getAuthorizationToken(authorization);
-            decodedToken = firebaseAuth.verifyIdToken(token);
-        } catch (IllegalArgumentException | FirebaseAuthException e){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                    "{\"code\":\"INVALID_TOKEN\", \"message\":\"" + e.getMessage() + "\"}");
-        }
+        FirebaseToken decodedToken = getDecodedToken(authorization);
         if(userRepository.findByEmail(decodedToken.getEmail())!=null){
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
@@ -43,6 +36,19 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
         return user;
     }
+
+    public FirebaseToken getDecodedToken(String authorization){
+        FirebaseToken decodedToken;
+        try {
+            String token = RequestUtil.getAuthorizationToken(authorization);
+            decodedToken = firebaseAuth.verifyIdToken(token);
+        } catch (IllegalArgumentException | FirebaseAuthException e){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "{\"code\":\"INVALID_TOKEN\", \"message\":\"" + e.getMessage() + "\"}");
+        }
+        return decodedToken;
+    }
+
 
     @Override
     public User loadUserByUsername(String uid) throws UsernameNotFoundException {

@@ -25,7 +25,6 @@ import java.util.NoSuchElementException;
 
 @Slf4j
 @AllArgsConstructor
-@WebFilter(urlPatterns = "/resource/**")
 public class FirebaseTokenFilter extends OncePerRequestFilter {
 
     private final UserService userService;

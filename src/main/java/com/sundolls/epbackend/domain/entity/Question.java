@@ -1,11 +1,15 @@
 package com.sundolls.epbackend.domain.entity;
 
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Entity
 @Table(name = "question_tb")
+@NoArgsConstructor
+@Getter
 public class Question extends BaseTimeEntity{
     @Id
     @Column(name = "QUESTION_ID")

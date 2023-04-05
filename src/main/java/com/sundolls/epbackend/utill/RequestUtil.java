@@ -1,5 +1,7 @@
 package com.sundolls.epbackend.utill;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import javax.servlet.http.HttpServletRequest;
 
 public class RequestUtil {
@@ -22,4 +24,5 @@ public class RequestUtil {
     public static String getAuthorizationToken(HttpServletRequest request) {
         return getAuthorizationToken(request.getHeader("Authorization"));
     }
+
 }

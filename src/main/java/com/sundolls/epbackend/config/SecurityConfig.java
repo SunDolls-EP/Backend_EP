@@ -35,15 +35,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/swagger-resources*/**",
             "/v2/api-docs"
     };
-    private static final String[] TEST_PATH = {
-            "/test*/**"
+    private static final String[] USER_PATH = {
+            "/user*/**"
     };
 
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
                 .antMatchers(SWAGGER_PATH)
-                .antMatchers(TEST_PATH);
+                .antMatchers(USER_PATH);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.sundolls.epbackend.entity;
+package com.sundolls.epbackend.domain.entity;
 
 import javax.persistence.*;
 

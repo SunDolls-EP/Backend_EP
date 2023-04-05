@@ -3,6 +3,9 @@ package com.sundolls.epbackend.filter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.sundolls.epbackend.domain.entity.User;
+import com.sundolls.epbackend.domain.service.UserService;
+import com.sundolls.epbackend.utill.RequestUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
@@ -14,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -21,9 +25,10 @@ import java.util.NoSuchElementException;
 
 @Slf4j
 @AllArgsConstructor
+@WebFilter(urlPatterns = "/resource/**")
 public class FirebaseTokenFilter extends OncePerRequestFilter {
 
-    private final UserDetailsService userDetailsService;
+    private final UserService userService;
     private final FirebaseAuth firebaseAuth;
 
     @Override
@@ -32,37 +37,31 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
 
         // get the token from the request
         FirebaseToken decodedToken;
-        String header = request.getHeader("Authorization");
-        if (header == null || !header.startsWith("Bearer ")) {
-            setUnauthorizedResponse(response, "INVALID_HEADER");
-            return;
-        }
-        String token = header.substring(7);
-
-        // verify IdToken
         try{
-            decodedToken = firebaseAuth.verifyIdToken(token);
-        } catch (FirebaseAuthException e) {
-            setUnauthorizedResponse(response, "INVALID_TOKEN");
+            String header = RequestUtil.getAuthorizationToken(request.getHeader("Authorization"));
+            decodedToken = firebaseAuth.verifyIdToken(header);
+        } catch (FirebaseAuthException | IllegalArgumentException e) {
+            // ErrorMessage 응답 전송
+            response.setStatus(HttpStatus.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"code\":\"INVALID_TOKEN\", \"message\":\"" + e.getMessage() + "\"}");
             return;
         }
 
-        // User를 가져와 SecurityContext에 저장한다.
+            // User를 가져와 SecurityContext에 저장한다.
         try{
-            UserDetails user = userDetailsService.loadUserByUsername(decodedToken.getUid());
+            User user = userService.loadUserByUsername(decodedToken.getUid());
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     user, null, user.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch(NoSuchElementException e){
-            setUnauthorizedResponse(response, "USER_NOT_FOUND");
+            // ErrorMessage 응답 전송
+            response.setStatus(HttpStatus.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"code\":\"USER_NOT_FOUND\"}");
             return;
         }
-        filterChain.doFilter(request, response);
-    }
 
-    private void setUnauthorizedResponse(HttpServletResponse response, String code) throws IOException {
-        response.setStatus(HttpStatus.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.getWriter().write("{\"code\":\""+code+"\"}");
+        filterChain.doFilter(request, response);
     }
 }

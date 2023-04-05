@@ -1,4 +1,4 @@
-package com.sundolls.epbackend.dto;
+package com.sundolls.epbackend.domain.dto;
 
 import lombok.Data;
 

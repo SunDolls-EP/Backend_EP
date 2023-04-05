@@ -1,14 +1,14 @@
-package com.sundolls.epbackend.service;
+package com.sundolls.epbackend.domain.service;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import com.sundolls.epbackend.dto.UserDto;
-import com.sundolls.epbackend.entity.User;
+import com.sundolls.epbackend.domain.dto.UserDto;
+import com.sundolls.epbackend.domain.entity.User;
 import com.sundolls.epbackend.repository.UserRepository;
+import com.sundolls.epbackend.utill.RequestUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -25,14 +25,14 @@ public class UserService implements UserDetailsService {
     public User register(String authorization, UserDto userDto){
         FirebaseToken decodedToken;
         try {
-            if(authorization == null || !authorization.startsWith("Bearer ")){
-                throw new IllegalArgumentException("Invalid authorization header");
-            }
-            String token = authorization.replace("Bearer ","");
+            String token = RequestUtil.getAuthorizationToken(authorization);
             decodedToken = firebaseAuth.verifyIdToken(token);
         } catch (IllegalArgumentException | FirebaseAuthException e){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "{\"code\":\"INVALID_TOKEN\", \"message\":\"" + e.getMessage() + "\"}");
+        }
+        if(userRepository.findByEmail(decodedToken.getEmail())!=null){
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
         User user = User.builder()
                 .uid(decodedToken.getUid())
@@ -45,7 +45,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String uid) throws UsernameNotFoundException {
+    public User loadUserByUsername(String uid) throws UsernameNotFoundException {
         return userRepository.findById(uid).get();
     }
 }

@@ -1,6 +1,6 @@
-package com.sundolls.epbackend.entity;
+package com.sundolls.epbackend.domain.entity;
 
-import com.sundolls.epbackend.entity.primaryKey.CalendarId;
+import com.sundolls.epbackend.domain.entity.primaryKey.CalendarId;
 
 import javax.persistence.*;
 

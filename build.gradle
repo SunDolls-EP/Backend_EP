@@ -30,6 +30,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     implementation group: 'com.google.firebase', name: 'firebase-admin', version: '8.1.0'
+    implementation group: 'io.springfox', name: 'springfox-boot-starter', version: '3.0.0'
 
 }
 

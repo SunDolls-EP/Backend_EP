@@ -1,18 +1,12 @@
-package com.sundolls.epbackend.entity.primaryKey;
+package com.sundolls.epbackend.domain.entity.primaryKey;
 
-import com.sundolls.epbackend.entity.User;
-import lombok.Data;
-
-import javax.persistence.*;
+import javax.persistence.Column;
 import java.io.Serializable;
 
-
-@Data
-public class CalendarId implements Serializable {
-
+public class StudyInfoId implements Serializable {
     private String userId;
 
-    @Column(name = "CONTENT_NO")
+    @Column(name = "INFO_NO")
     private long no;
 
     @Override

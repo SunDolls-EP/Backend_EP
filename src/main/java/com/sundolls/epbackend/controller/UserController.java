@@ -1,16 +1,15 @@
 package com.sundolls.epbackend.controller;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
-import com.sundolls.epbackend.dto.UserDto;
-import com.sundolls.epbackend.entity.User;
-import com.sundolls.epbackend.service.UserService;
+import com.sundolls.epbackend.domain.dto.UserDto;
+import com.sundolls.epbackend.domain.entity.User;
+import com.sundolls.epbackend.domain.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/user")
@@ -21,8 +20,11 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public void signUp(@RequestHeader("Authorization") String authorization,
-                       @RequestBody UserDto userDto){
+    public ResponseEntity<UserDto> signUp(@RequestHeader("Authorization") String authorization,
+                                 @RequestBody UserDto userDto){
+        HttpHeaders header = new HttpHeaders();
+        header.add("Content-Type", "application/json");
         User user = userService.register(authorization,userDto);
+        return new ResponseEntity<>(userDto, header,HttpStatus.valueOf("200"));
     }
 }

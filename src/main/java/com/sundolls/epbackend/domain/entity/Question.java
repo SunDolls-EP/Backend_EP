@@ -1,4 +1,6 @@
-package com.sundolls.epbackend.entity;
+package com.sundolls.epbackend.domain.entity;
+
+import lombok.Builder;
 
 import javax.persistence.*;
 
@@ -19,5 +21,9 @@ public class Question extends BaseTimeEntity{
 
     @Column(name = "CONTENT")
     private String content;
+
+    @Builder
+    public Question(User user, String title, String content){
+    };
 
 }

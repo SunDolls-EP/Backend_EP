@@ -1,4 +1,4 @@
-package com.sundolls.epbackend.domain.entity;
+package com.sundolls.epbackend.domain.entity.baseEntity;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;

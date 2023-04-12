@@ -6,7 +6,8 @@ build/
 !**/src/test/**/build/
 database.properties
 serverAccountKey.json
-TokenProperties.java
+JwtProperties.java
+jwt.properties
 
 ### STS ###
 .apt_generated

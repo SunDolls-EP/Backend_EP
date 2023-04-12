@@ -1,20 +1,16 @@
 package com.sundolls.epbackend.config;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.sundolls.epbackend.domain.service.UserService;
-import com.sundolls.epbackend.filter.FirebaseTokenFilter;
+import com.sundolls.epbackend.domain.entity.principal.PrincipalDetailsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -27,7 +23,7 @@ import java.util.List;
 @ServletComponentScan
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final UserService userService;
+    private final PrincipalDetailsService principalDetailsService;
     private final FirebaseAuth firebaseAuth;
     private static final String[] SWAGGER_PATH = {
             "/swagger*/**",
@@ -46,6 +42,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(USER_PATH);
     }
 
+
+
     @Override
     public void configure(HttpSecurity http) throws Exception {
 
@@ -53,9 +51,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .formLogin().disable()
                 .cors().configurationSource(request -> {
-                    var cors = new CorsConfiguration();
+                    CorsConfiguration cors = new CorsConfiguration();
                     cors.setAllowedOrigins(List.of("*"));
-                    cors.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "OPTIONS"));
+                    cors.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "OPTIONS","PATCH"));
                     cors.setAllowedHeaders(List.of("*"));
                     return cors;
                 })
@@ -63,8 +61,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(new FirebaseTokenFilter(userService, firebaseAuth),
-                        UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling()
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
     }

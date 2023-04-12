@@ -1,23 +1,24 @@
 package com.sundolls.epbackend.domain.entity;
 
+import com.sundolls.epbackend.domain.dto.UserDto;
+import com.sundolls.epbackend.domain.entity.baseEntity.BaseTimeEntity;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.util.Collection;
 
 @Entity
 @Table(name = "user_tb")
 @NoArgsConstructor
-public class User extends BaseTimeEntity implements UserDetails {
+@Getter
+public class User extends BaseTimeEntity {
     @Id
-    @Column(name = "UID")
-    private String uid;
+    @Column(name = "ID")
+    private String id;
 
-    @Column(name = "NICKNAME")
-    private String nickName;
+    @Column(name = "USERNAME")
+    private String username;
 
     @Column(name="SCHOOL_NAME")
     private String schoolName;
@@ -25,43 +26,31 @@ public class User extends BaseTimeEntity implements UserDetails {
     @Column(name = "EMAIL")
     private String email;
 
+    @Column(name="ROLE")
+    private String role;
+
+    @Column(name="PROVIDER")
+    private String provider;
+
+    @Column(name = "PROVIDER_ID")
+    private String providerId;
+
     @Builder
-    public User(String uid, String email,String nickname, String school){
+    public User(String id, String username, String school, String email, String role, String provider, String providerId){
+        this.id = id;
+        this.username = username;
+        this.schoolName=school;
+        this.email = email;
+        this.role = role;
+        this.provider = provider;
+        this.providerId = providerId;
     }
 
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public UserDto toUserDto(){
+        /**
+         * userDto를 반환 하는 메소드
+         */
         return null;
     }
 
-    @Override
-    public String getPassword() {
-        return null;
-    }
-
-    @Override
-    public String getUsername() {
-        return nickName;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
 }

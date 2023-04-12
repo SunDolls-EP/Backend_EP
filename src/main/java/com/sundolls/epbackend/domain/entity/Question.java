@@ -1,5 +1,6 @@
 package com.sundolls.epbackend.domain.entity;
 
+import com.sundolls.epbackend.domain.entity.baseEntity.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,13 +11,13 @@ import javax.persistence.*;
 @Table(name = "question_tb")
 @NoArgsConstructor
 @Getter
-public class Question extends BaseTimeEntity{
+public class Question extends BaseTimeEntity {
     @Id
     @Column(name = "QUESTION_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "WRITER_UID")
     private User user;
 

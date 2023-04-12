@@ -1,20 +1,24 @@
 package com.sundolls.epbackend.domain.entity;
 
+import com.sundolls.epbackend.domain.entity.baseEntity.BaseTimeEntity;
 import com.sundolls.epbackend.domain.entity.primaryKey.CalendarId;
 
 import javax.persistence.*;
 
 @Entity
 @Table(name = "calendar_content_tb")
-public class Calendar extends BaseTimeEntity{
+@IdClass(CalendarId.class)
+public class Calendar extends BaseTimeEntity {
 
-    @MapsId("userId")
-    @ManyToOne
-    @JoinColumn(name = "USER_UID")
+    @Id
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID")
     private User user;
 
-    @EmbeddedId
-    private CalendarId calendarId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "CALENDAR_NO")
+    private long no;
 
     @Column(name = "CONTENT")
     private String content;

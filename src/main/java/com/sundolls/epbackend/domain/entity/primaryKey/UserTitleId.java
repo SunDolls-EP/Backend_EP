@@ -3,14 +3,12 @@ package com.sundolls.epbackend.domain.entity.primaryKey;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
 
-
 @Embeddable
 @EqualsAndHashCode
-public class StudyInfoId implements Serializable {
+public class UserTitleId implements Serializable {
     private String userId;
-    private Long no;
+    private Long titleId;
 }

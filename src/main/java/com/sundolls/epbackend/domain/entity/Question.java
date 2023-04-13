@@ -15,10 +15,10 @@ public class Question extends BaseTimeEntity {
     @Id
     @Column(name = "QUESTION_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "WRITER_UID")
+    @JoinColumn(name = "WRITER_ID")
     private User user;
 
     @Column(name = "TITLE")

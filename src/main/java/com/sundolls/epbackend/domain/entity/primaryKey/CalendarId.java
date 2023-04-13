@@ -7,9 +7,9 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 
-@Data
+@Embeddable
 @EqualsAndHashCode
 public class CalendarId implements Serializable {
     private String userId;
-    private long no;
+    private Long no;
 }

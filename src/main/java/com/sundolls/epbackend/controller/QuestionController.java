@@ -1,12 +1,9 @@
 package com.sundolls.epbackend.controller;
 
 import com.sundolls.epbackend.domain.dto.QuestionDto;
-import com.sundolls.epbackend.domain.dto.UserDto;
 import com.sundolls.epbackend.domain.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/question")

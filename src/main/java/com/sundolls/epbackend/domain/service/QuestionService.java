@@ -2,7 +2,6 @@ package com.sundolls.epbackend.domain.service;
 
 
 import com.sundolls.epbackend.domain.dto.QuestionDto;
-import com.sundolls.epbackend.domain.dto.UserDto;
 import com.sundolls.epbackend.domain.entity.Question;
 import com.sundolls.epbackend.domain.entity.User;
 import com.sundolls.epbackend.repository.QuestionRepository;
@@ -10,7 +9,6 @@ import com.sundolls.epbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -23,13 +21,9 @@ public class QuestionService {
     private final UserService userService;
 
     public void createQuestion(String header,QuestionDto questionDto){
-        User user = userRepository.findById(userService.getDecodedToken(header).getUid()).get();
-        Question question = Question.builder()
-                .title(questionDto.getTitle())
-                .content(questionDto.getContent())
-                .user(user)
-                .build();
-            questionRepository.save(question);
+        /**
+         * 질문 생성 메소드
+         */
 
     }
 

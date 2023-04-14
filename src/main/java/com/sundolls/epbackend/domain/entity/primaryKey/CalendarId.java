@@ -11,5 +11,5 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class CalendarId implements Serializable {
     private String userId;
-    private Long no;
+    private long no;
 }

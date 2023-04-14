@@ -8,11 +8,10 @@ import javax.persistence.*;
 @Entity
 @Table(name = "user_title_tb")
 @NoArgsConstructor
-@IdClass(UserTitleId.class)
 public class UserTitle {
 
     @EmbeddedId
-    UserTitleId userTitleId;
+    private UserTitleId userTitleId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")

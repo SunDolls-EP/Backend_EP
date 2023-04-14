@@ -1,9 +1,8 @@
-package com.sundolls.epbackend.domain.entity.principal;
+package com.sundolls.epbackend.domain.entity.auth;
 
 import com.sundolls.epbackend.domain.entity.User;
 import com.sundolls.epbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;

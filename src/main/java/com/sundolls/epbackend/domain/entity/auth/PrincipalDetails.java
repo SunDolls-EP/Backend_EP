@@ -1,4 +1,4 @@
-package com.sundolls.epbackend.domain.entity.principal;
+package com.sundolls.epbackend.domain.entity.auth;
 
 import com.sundolls.epbackend.domain.entity.User;
 import lombok.AllArgsConstructor;
@@ -29,7 +29,7 @@ public class PrincipalDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getUid();
+        return user.getId();
     }
 
     @Override

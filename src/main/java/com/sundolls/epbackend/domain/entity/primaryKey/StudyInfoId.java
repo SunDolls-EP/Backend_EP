@@ -12,5 +12,5 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class StudyInfoId implements Serializable {
     private String userId;
-    private Long no;
+    private long no;
 }

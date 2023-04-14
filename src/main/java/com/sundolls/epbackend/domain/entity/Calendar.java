@@ -8,12 +8,11 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "calendar_content_tb")
-@IdClass(CalendarId.class)
 @NoArgsConstructor
 public class Calendar extends BaseTimeEntity {
 
     @EmbeddedId
-    CalendarId calendarId;
+    private CalendarId calendarId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
@@ -23,7 +22,7 @@ public class Calendar extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CALENDAR_NO")
     @MapsId("no")
-    private Long no;
+    private long no;
 
     @Column(name = "CONTENT")
     private String content;

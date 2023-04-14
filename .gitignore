@@ -5,9 +5,8 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 database.properties
-serverAccountKey.json
-JwtProperties.java
-jwt.properties
+oauth.properties
+
 
 ### STS ###
 .apt_generated

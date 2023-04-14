@@ -1,7 +1,6 @@
 package com.sundolls.epbackend.config;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.sundolls.epbackend.domain.entity.principal.PrincipalDetailsService;
+import com.sundolls.epbackend.domain.entity.auth.PrincipalDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
@@ -24,7 +22,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final PrincipalDetailsService principalDetailsService;
-    private final FirebaseAuth firebaseAuth;
     private static final String[] SWAGGER_PATH = {
             "/swagger*/**",
             "/swagger-ui.html",

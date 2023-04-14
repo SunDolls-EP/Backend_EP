@@ -10,5 +10,5 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class UserTitleId implements Serializable {
     private String userId;
-    private Long titleId;
+    private long titleId;
 }

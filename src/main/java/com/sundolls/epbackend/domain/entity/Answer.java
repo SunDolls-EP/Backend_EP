@@ -12,7 +12,7 @@ public class Answer extends BaseTimeEntity {
     @Id
     @Column(name = "ANSWER_ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "QUESTION_ID")

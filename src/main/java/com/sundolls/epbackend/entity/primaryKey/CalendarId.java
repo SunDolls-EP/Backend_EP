@@ -1,4 +1,4 @@
-package com.sundolls.epbackend.domain.entity.primaryKey;
+package com.sundolls.epbackend.entity.primaryKey;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,6 +10,6 @@ import java.io.Serializable;
 @Embeddable
 @EqualsAndHashCode
 public class CalendarId implements Serializable {
-    private String userId;
-    private long no;
+     String id;
+     Long no;
 }

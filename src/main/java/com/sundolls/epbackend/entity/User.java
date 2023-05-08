@@ -1,6 +1,6 @@
-package com.sundolls.epbackend.domain.entity;
+package com.sundolls.epbackend.entity;
 
-import com.sundolls.epbackend.domain.entity.baseEntity.BaseTimeEntity;
+import com.sundolls.epbackend.entity.baseEntity.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,7 +31,6 @@ public class User extends BaseTimeEntity {
     @Column(name="SCHOOL_NAME")
     private String schoolName;
 
-
     @Column(name="PROVIDER")
     private String provider;
 
@@ -39,9 +38,10 @@ public class User extends BaseTimeEntity {
     private String providerId;
 
     @Builder
-    public User(String id, String username, String school, String email, String role, String provider, String providerId){
+    public User(String id, String username, String password, String school, String email, String role, String provider, String providerId){
         this.id = id;
         this.username = username;
+        this.password =password;
         this.schoolName=school;
         this.email = email;
         this.role = role;

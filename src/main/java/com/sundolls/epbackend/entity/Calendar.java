@@ -1,7 +1,7 @@
-package com.sundolls.epbackend.domain.entity;
+package com.sundolls.epbackend.entity;
 
-import com.sundolls.epbackend.domain.entity.baseEntity.BaseTimeEntity;
-import com.sundolls.epbackend.domain.entity.primaryKey.CalendarId;
+import com.sundolls.epbackend.entity.baseEntity.BaseTimeEntity;
+import com.sundolls.epbackend.entity.primaryKey.CalendarId;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -16,12 +16,11 @@ public class Calendar extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
-    @MapsId("userId")
+    @MapsId("id")
     private User user;
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CALENDAR_NO")
-    @MapsId("no")
     private long no;
 
     @Column(name = "CONTENT")

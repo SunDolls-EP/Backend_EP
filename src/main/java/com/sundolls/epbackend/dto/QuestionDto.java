@@ -1,6 +1,5 @@
-package com.sundolls.epbackend.domain.dto;
+package com.sundolls.epbackend.dto;
 
-import com.sundolls.epbackend.domain.entity.User;
 import lombok.Data;
 
 @Data

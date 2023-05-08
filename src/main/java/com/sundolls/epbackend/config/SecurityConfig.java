@@ -1,18 +1,25 @@
 package com.sundolls.epbackend.config;
 
-import com.sundolls.epbackend.domain.entity.auth.PrincipalDetailsService;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+import com.sundolls.epbackend.config.auth.PrincipalDetailsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -20,8 +27,28 @@ import java.util.List;
 @EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
 @ServletComponentScan
 @RequiredArgsConstructor
+@PropertySource("/oauth.properties")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final PrincipalDetailsService principalDetailsService;
+    private final NetHttpTransport netHttpTransport;
+    private final GsonFactory gsonFactory;
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    private String clientId;
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
+
+    @Bean
+    public GoogleIdTokenVerifier googleIdTokenVerifier(){
+        return new GoogleIdTokenVerifier.Builder(netHttpTransport,
+                        gsonFactory)
+                .setAudience(Collections.singletonList(clientId))
+                .build();
+    }
+
     private static final String[] SWAGGER_PATH = {
             "/swagger*/**",
             "/swagger-ui.html",
@@ -31,22 +58,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String[] USER_PATH = {
             "/user*/**"
     };
+    private static final String[] OAUTH2_PATH = {
+            "/oauth2*/**"
+    };
 
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
                 .antMatchers(SWAGGER_PATH)
-                .antMatchers(USER_PATH);
+                .antMatchers(USER_PATH)
+                .antMatchers(OAUTH2_PATH);
     }
-
 
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
 
         http
+
                 .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 .formLogin().disable()
+                .httpBasic().disable()
+                .authorizeRequests()
+                .antMatchers("/user/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
                 .cors().configurationSource(request -> {
                     CorsConfiguration cors = new CorsConfiguration();
                     cors.setAllowedOrigins(List.of("*"));
@@ -54,12 +92,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     cors.setAllowedHeaders(List.of("*"));
                     return cors;
                 })
-                .and()
-                .authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                .exceptionHandling()
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
+
+        ;
     }
 
 }

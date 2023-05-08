@@ -1,27 +1,27 @@
-package com.sundolls.epbackend.domain.entity.auth;
+package com.sundolls.epbackend.config.auth;
 
-import com.sundolls.epbackend.domain.entity.User;
+import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Component
+@Service
 public class PrincipalDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public PrincipalDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> optionalUser =  userRepository.findById(username);
+    public PrincipalDetails loadUserByUsername(String id) throws UsernameNotFoundException {
+        Optional<User> optionalUser =  userRepository.findById(id);
         User user;
         if(optionalUser.isPresent()) {
             user = optionalUser.get();
         } else {
-            throw new UsernameNotFoundException("USER NOT FOUND");
+            return null;
         }
 
         return new PrincipalDetails(user);

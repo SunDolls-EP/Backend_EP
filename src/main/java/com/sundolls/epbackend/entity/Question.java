@@ -1,6 +1,6 @@
-package com.sundolls.epbackend.domain.entity;
+package com.sundolls.epbackend.entity;
 
-import com.sundolls.epbackend.domain.entity.baseEntity.BaseTimeEntity;
+import com.sundolls.epbackend.entity.baseEntity.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +28,10 @@ public class Question extends BaseTimeEntity {
     private String content;
 
     @Builder
-    public Question(User user, String title, String content){
-    };
+    public Question(User user,String title, String content){
+        this.user = user;
+        this.title = title;
+        this.content = content;
+    }
 
 }

@@ -1,4 +1,4 @@
-package com.sundolls.epbackend.domain.entity.primaryKey;
+package com.sundolls.epbackend.entity.primaryKey;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,6 +9,6 @@ import java.io.Serializable;
 @Embeddable
 @EqualsAndHashCode
 public class UserTitleId implements Serializable {
-    private String userId;
-    private long titleId;
+     String id;
+     Long titleId;
 }

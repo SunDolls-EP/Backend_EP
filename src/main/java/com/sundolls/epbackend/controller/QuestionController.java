@@ -1,7 +1,7 @@
 package com.sundolls.epbackend.controller;
 
-import com.sundolls.epbackend.domain.dto.QuestionDto;
-import com.sundolls.epbackend.domain.service.QuestionService;
+import com.sundolls.epbackend.dto.QuestionDto;
+import com.sundolls.epbackend.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

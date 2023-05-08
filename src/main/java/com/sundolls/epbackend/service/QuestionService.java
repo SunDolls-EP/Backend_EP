@@ -1,9 +1,8 @@
-package com.sundolls.epbackend.domain.service;
+package com.sundolls.epbackend.service;
 
 
-import com.sundolls.epbackend.domain.dto.QuestionDto;
-import com.sundolls.epbackend.domain.entity.Question;
-import com.sundolls.epbackend.domain.entity.User;
+import com.sundolls.epbackend.dto.QuestionDto;
+import com.sundolls.epbackend.entity.Question;
 import com.sundolls.epbackend.repository.QuestionRepository;
 import com.sundolls.epbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +20,7 @@ public class QuestionService {
     private final UserService userService;
 
     public void createQuestion(String header,QuestionDto questionDto){
-        /**
-         * 질문 생성 메소드
-         */
+
 
     }
 
@@ -37,7 +34,6 @@ public class QuestionService {
             questionRepository.deleteById(id);
             Question existingQuestion = question.get();
             Question newQuestion = Question.builder()
-                    .user(existingQuestion.getUser())
                     .title(questionDto.getTitle())
                     .content(questionDto.getContent())
                     .build();

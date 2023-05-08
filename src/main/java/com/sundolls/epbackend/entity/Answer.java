@@ -1,6 +1,6 @@
-package com.sundolls.epbackend.domain.entity;
+package com.sundolls.epbackend.entity;
 
-import com.sundolls.epbackend.domain.entity.baseEntity.BaseTimeEntity;
+import com.sundolls.epbackend.entity.baseEntity.BaseTimeEntity;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;

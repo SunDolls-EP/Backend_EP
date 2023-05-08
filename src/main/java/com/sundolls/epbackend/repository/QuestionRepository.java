@@ -1,6 +1,6 @@
 package com.sundolls.epbackend.repository;
 
-import com.sundolls.epbackend.domain.entity.Question;
+import com.sundolls.epbackend.entity.Question;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

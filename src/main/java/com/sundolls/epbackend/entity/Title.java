@@ -1,4 +1,4 @@
-package com.sundolls.epbackend.domain.entity;
+package com.sundolls.epbackend.entity;
 
 import lombok.NoArgsConstructor;
 
@@ -11,7 +11,7 @@ public class Title {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "TITLE_ID")
-    private long id;
+    private Long id;
 
     @Column(name = "TITLE_NAME")
     private String name;

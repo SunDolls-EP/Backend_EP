@@ -1,9 +1,11 @@
 package com.sundolls.epbackend.config;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.sundolls.epbackend.config.auth.PrincipalDetailsService;
+import com.sundolls.epbackend.filter.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -30,8 +32,6 @@ import java.util.List;
 @PropertySource("/oauth.properties")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final PrincipalDetailsService principalDetailsService;
-    private final NetHttpTransport netHttpTransport;
-    private final GsonFactory gsonFactory;
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String clientId;
 
@@ -39,12 +39,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public BCryptPasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+    @Bean
+    public NetHttpTransport netHttpTransport(){
+        return new NetHttpTransport();
+    }
+    @Bean GsonFactory gsonFactory(){
+        return new GsonFactory();
+    }
+    @Bean
+    JwtProvider jwtProvider(){
+        return new JwtProvider(principalDetailsService);
+    }
 
 
     @Bean
     public GoogleIdTokenVerifier googleIdTokenVerifier(){
-        return new GoogleIdTokenVerifier.Builder(netHttpTransport,
-                        gsonFactory)
+        return new GoogleIdTokenVerifier.Builder(new NetHttpTransport(),
+                        new GsonFactory())
                 .setAudience(Collections.singletonList(clientId))
                 .build();
     }
@@ -82,7 +93,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .formLogin().disable()
                 .httpBasic().disable()
                 .authorizeRequests()
-                .antMatchers("/user/**").permitAll()
+                .antMatchers("/api/token/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .cors().configurationSource(request -> {

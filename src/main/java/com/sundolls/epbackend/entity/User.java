@@ -25,27 +25,25 @@ public class User extends BaseTimeEntity {
     @Column(name = "EMAIL")
     private String email;
 
-    @Column(name="ROLE")
-    private String role;
 
     @Column(name="SCHOOL_NAME")
     private String schoolName;
 
-    @Column(name="PROVIDER")
-    private String provider;
 
-    @Column(name = "PROVIDER_ID")
-    private String providerId;
 
     @Builder
-    public User(String id, String username, String password, String school, String email, String role, String provider, String providerId){
+    public User(String id, String username, String password, String schoolName, String email){
         this.id = id;
         this.username = username;
         this.password =password;
-        this.schoolName=school;
+        this.schoolName=schoolName;
         this.email = email;
-        this.role = role;
-        this.provider = provider;
-        this.providerId = providerId;
+    }
+
+    public void update(String username, String schoolName){
+        if(username!=null)
+            this.username = username;
+        if(schoolName!=null)
+            this.schoolName = schoolName;
     }
 }

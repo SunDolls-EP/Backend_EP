@@ -1,26 +1,33 @@
 package com.sundolls.epbackend.entity;
 
 import com.sundolls.epbackend.entity.baseEntity.BaseTimeEntity;
-import com.sundolls.epbackend.entity.primaryKey.StudyInfoId;
 import lombok.NoArgsConstructor;
+import org.checkerframework.checker.units.qual.C;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
+import java.sql.Time;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "study_info_tb")
 @NoArgsConstructor
-public class StudyInfo extends BaseTimeEntity {
+public class StudyInfo {
 
-    @EmbeddedId
-    private StudyInfoId studyInfoId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "INFO_NO")
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
-    @MapsId("id")
     private User user;
 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "INFO_NO")
-    private long no;
+    @Column(name = "TOTAL_STUDY_TIME")
+    private Time time;
+
+    @Column(name = "CREATED_AT")
+    @CreatedDate
+    private Timestamp createdAt;
 
 }

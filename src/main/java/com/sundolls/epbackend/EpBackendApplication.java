@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @EnableJpaAuditing
 @PropertySource(value = { "classpath:database.properties"})
 @PropertySource(value = { "classpath:oauth.properties"})
+@PropertySource(value = { "classpath:jwt.properties"})
 public class EpBackendApplication {
 
     public static void main(String[] args) {

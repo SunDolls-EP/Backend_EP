@@ -1,6 +1,7 @@
 package com.sundolls.epbackend.service;
 
 import com.sundolls.epbackend.dto.request.CalendarRequest;
+import com.sundolls.epbackend.dto.response.CalendarResponse;
 import com.sundolls.epbackend.entity.Calendar;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.filter.JwtProvider;
@@ -27,18 +28,26 @@ public class CalendarService {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
 
-    public ArrayList<Calendar> getCalendarList(String accessToken, Timestamp from, Timestamp to){
+    public ArrayList<CalendarResponse> getCalendarList(String accessToken, Timestamp from, Timestamp to){
         Optional<User> optionalUser = userRepository.findById(jwtProvider.getUsername(accessToken));
         if (optionalUser.isEmpty()) {
             return null;
         }
         User user  = optionalUser.get();
         ArrayList<Calendar> calendarArrayList = calendarRepository.findByCreatedAtBetweenAndUser(from, to, user);
+        ArrayList<CalendarResponse> calendarResponseArrayList = new ArrayList<>();
+        for (Calendar calendar : calendarArrayList) {
+            CalendarResponse element = new CalendarResponse();
+            element.setContent(calendar.getContent());
+            element.setCreatedAt(calendar.getCreatedAt());
+            element.setModifiedAt(calendar.getModifiedAt());
+            calendarResponseArrayList.add(element);
+        }
 
-        return calendarArrayList;
+        return calendarResponseArrayList;
     }
 
-    public Calendar writeCalendar(String accessToken, CalendarRequest request){
+    public CalendarResponse writeCalendar(String accessToken, CalendarRequest request){
         Optional<User> optionalUser = userRepository.findById(jwtProvider.getUsername(accessToken));
         if (optionalUser.isEmpty()) {
             return null;
@@ -50,11 +59,17 @@ public class CalendarService {
                 .content(request.getContent())
                 .build();
         calendarRepository.save(calendar);
-        return calendar;
+
+        CalendarResponse calendarResponse = new CalendarResponse();
+        calendarResponse.setContent(calendar.getContent());
+        calendarResponse.setCreatedAt(calendar.getCreatedAt());
+        calendarResponse.setModifiedAt(calendar.getModifiedAt());
+
+        return calendarResponse;
     }
 
     @Transactional
-    public Calendar updateCalendar(String accessToken, CalendarRequest request){
+    public CalendarResponse updateCalendar(String accessToken, CalendarRequest request){
         Optional<User> optionalUser = userRepository.findById(jwtProvider.getUsername(accessToken));
         if (optionalUser.isEmpty()) {
             return null;
@@ -68,6 +83,11 @@ public class CalendarService {
         }
         Calendar calendar = optionalCalendar.get();
         calendar.update(request.getContent());
-        return calendar;
+
+        CalendarResponse calendarResponse = new CalendarResponse();
+        calendarResponse.setContent(calendar.getContent());
+        calendarResponse.setCreatedAt(calendar.getCreatedAt());
+        calendarResponse.setModifiedAt(calendar.getModifiedAt());
+        return calendarResponse;
     }
 }

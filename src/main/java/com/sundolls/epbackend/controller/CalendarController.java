@@ -21,16 +21,14 @@ public class CalendarController {
     private final CalendarService calendarService;
 
     @GetMapping("")
-    public ResponseEntity<Map> getCalendar(
+    public ResponseEntity<ArrayList<CalendarResponse>> getCalendar(
             @RequestHeader("Authorization") String accessToken,
             @RequestParam Timestamp from, @RequestParam Timestamp to){
         HttpStatus httpStatus = null;
-        Map<String, Object> body = new HashMap<>();
-        ArrayList<Calendar> calendarArrayList = calendarService.getCalendarList(accessToken, from, to);
+        ArrayList<CalendarResponse> body = calendarService.getCalendarList(accessToken, from, to);
 
-        if (calendarArrayList != null) {
+        if (body != null) {
             httpStatus = HttpStatus.OK;
-            body.put("Calendars",calendarArrayList);
         } else {
             httpStatus = HttpStatus.UNAUTHORIZED;
         }
@@ -43,15 +41,11 @@ public class CalendarController {
             @RequestHeader("Authorization") String accessToken,
             CalendarRequest request) {
         HttpStatus httpStatus = null;
-        CalendarResponse body = new CalendarResponse();
 
-        Calendar calendar = calendarService.writeCalendar(accessToken, request);
+        CalendarResponse body = calendarService.writeCalendar(accessToken, request);
 
-        if (calendar!=null) {
+        if (body!=null) {
             httpStatus = HttpStatus.OK;
-            body.setContent(calendar.getContent());
-            body.setCreatedAt(calendar.getCreatedAt());
-            body.setModifiedAt(calendar.getModifiedAt());
         } else {
             httpStatus = HttpStatus.UNAUTHORIZED;
         }
@@ -64,15 +58,11 @@ public class CalendarController {
             @RequestHeader("Authorization") String accessToken,
             CalendarRequest request){
         HttpStatus httpStatus = null;
-        CalendarResponse body = new CalendarResponse();
 
-        Calendar calendar = calendarService.updateCalendar(accessToken, request);
+        CalendarResponse body = calendarService.updateCalendar(accessToken, request);
 
-        if (calendar!=null) {
+        if (body!=null) {
             httpStatus = HttpStatus.OK;
-            body.setContent(calendar.getContent());
-            body.setCreatedAt(calendar.getCreatedAt());
-            body.setModifiedAt(calendar.getModifiedAt());
         } else {
             httpStatus = HttpStatus.UNAUTHORIZED;
         }

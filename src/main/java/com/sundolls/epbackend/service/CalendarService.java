@@ -39,8 +39,8 @@ public class CalendarService {
         for (Calendar calendar : calendarArrayList) {
             CalendarResponse element = new CalendarResponse();
             element.setContent(calendar.getContent());
-            element.setCreatedAt(calendar.getCreatedAt());
-            element.setModifiedAt(calendar.getModifiedAt());
+            element.setCreatedAt(calendar.getCreatedAt().toLocalDateTime());
+            element.setModifiedAt(calendar.getModifiedAt().toLocalDateTime());
             calendarResponseArrayList.add(element);
         }
 
@@ -62,8 +62,8 @@ public class CalendarService {
 
         CalendarResponse calendarResponse = new CalendarResponse();
         calendarResponse.setContent(calendar.getContent());
-        calendarResponse.setCreatedAt(calendar.getCreatedAt());
-        calendarResponse.setModifiedAt(calendar.getModifiedAt());
+        calendarResponse.setCreatedAt(calendar.getCreatedAt().toLocalDateTime());
+        calendarResponse.setModifiedAt(calendar.getModifiedAt().toLocalDateTime());
 
         return calendarResponse;
     }
@@ -86,8 +86,8 @@ public class CalendarService {
 
         CalendarResponse calendarResponse = new CalendarResponse();
         calendarResponse.setContent(calendar.getContent());
-        calendarResponse.setCreatedAt(calendar.getCreatedAt());
-        calendarResponse.setModifiedAt(calendar.getModifiedAt());
+        calendarResponse.setCreatedAt(calendar.getCreatedAt().toLocalDateTime());
+        calendarResponse.setModifiedAt(calendar.getModifiedAt().toLocalDateTime());
         return calendarResponse;
     }
 }

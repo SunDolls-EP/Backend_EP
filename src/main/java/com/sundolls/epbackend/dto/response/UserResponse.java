@@ -8,8 +8,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class CalendarResponse {
-    private String content;
+public class UserResponse {
+    private String username;
+    private String schoolName;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 }

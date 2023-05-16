@@ -50,15 +50,18 @@ public class UserService {
         return null;
     }
 
-    @Transactional
+
     public User updateUser(UserPatchRequest request, String accessToken){
         Optional<User> optionalUser = userRepository.findById(jwtProvider.getUsername(accessToken));
         if (optionalUser.isEmpty()) {
             return null;
         }
         User user = optionalUser.get();
+        log.info(request.getUsername()+" "+request.getSchoolName());
         user.update(request.getUsername(),request.getSchoolName());
 
+        userRepository.save(user);
+        log.info(user.getSchoolName()+" "+user.getUsername());
         return user;
     }
 

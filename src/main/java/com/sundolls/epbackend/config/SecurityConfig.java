@@ -5,6 +5,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.sundolls.epbackend.config.auth.PrincipalDetailsService;
+import com.sundolls.epbackend.filter.JwtAuthenticationFilter;
 import com.sundolls.epbackend.filter.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,25 +32,12 @@ import java.util.List;
 @RequiredArgsConstructor
 @PropertySource("/oauth.properties")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final PrincipalDetailsService principalDetailsService;
+
+    private final JwtProvider jwtProvider;
+
+
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String clientId;
-
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
-    @Bean
-    public NetHttpTransport netHttpTransport(){
-        return new NetHttpTransport();
-    }
-    @Bean GsonFactory gsonFactory(){
-        return new GsonFactory();
-    }
-    @Bean
-    JwtProvider jwtProvider(){
-        return new JwtProvider(principalDetailsService);
-    }
 
 
     @Bean
@@ -66,19 +54,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/swagger-resources*/**",
             "/v2/api-docs"
     };
-    private static final String[] USER_PATH = {
-            "/user*/**"
-    };
-    private static final String[] OAUTH2_PATH = {
-            "/oauth2*/**"
-    };
+
 
     @Override
-    public void configure(WebSecurity web) throws Exception {
+    public void configure(WebSecurity web) {
         web.ignoring()
-                .antMatchers(SWAGGER_PATH)
-                .antMatchers(USER_PATH)
-                .antMatchers(OAUTH2_PATH);
+                .antMatchers(SWAGGER_PATH);
+
     }
 
 
@@ -96,6 +78,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/token/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
+                .apply(new FilterConfig(jwtProvider))
+                .and()
                 .cors().configurationSource(request -> {
                     CorsConfiguration cors = new CorsConfiguration();
                     cors.setAllowedOrigins(List.of("*"));
@@ -103,7 +87,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     cors.setAllowedHeaders(List.of("*"));
                     return cors;
                 })
-
         ;
     }
 

@@ -48,7 +48,7 @@ public class UserController {
     @PatchMapping("/user")
     public ResponseEntity<UserResponse> updateUserInfo(
             @RequestHeader(value = "Authorization")String accessTokenString,
-            UserPatchRequest request){
+            @RequestBody UserPatchRequest request){
         User user = userService.updateUser(request,accessTokenString);
         HttpStatus httpStatus = null;
         UserResponse body = new UserResponse();

@@ -9,6 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @MappedSuperclass
 @Getter
@@ -17,9 +18,9 @@ public abstract class BaseTimeEntity {
 
     @CreatedDate
     @Column(name = "CREATED_AT")
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @LastModifiedDate
     @Column(name = "MODIFIED_AT")
-    private Timestamp modifiedAt;
+    private LocalDateTime modifiedAt;
 }

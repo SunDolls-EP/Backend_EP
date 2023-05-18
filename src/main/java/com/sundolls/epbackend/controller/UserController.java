@@ -42,7 +42,7 @@ public class UserController {
             httpStatus=HttpStatus.BAD_REQUEST;
         }
 
-        return new ResponseEntity<>(body,httpStatus);
+        return new ResponseEntity<>(body, headers, httpStatus);
     }
 
     @PatchMapping("/user")
@@ -76,11 +76,18 @@ public class UserController {
         return new ResponseEntity<>(body, httpStatus);
    }
 
+   @PostMapping("/user/friend/{username}")
+   public ResponseEntity<UserResponse> requestFriend(
+           @RequestHeader(value = "Authorization")String accessTokenString,
+           @PathVariable String username) {
+        return null;
+   }
+
    private void setUserResponseBody(UserResponse body, User user){
        body.setUsername(user.getUsername());
        body.setSchoolName(user.getSchoolName());
-       body.setCreatedAt(user.getCreatedAt().toLocalDateTime());
-       body.setModifiedAt(user.getModifiedAt().toLocalDateTime());
+       body.setCreatedAt(user.getCreatedAt());
+       body.setModifiedAt(user.getModifiedAt());
    }
 
 }

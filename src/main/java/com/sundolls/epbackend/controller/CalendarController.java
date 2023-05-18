@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,9 +25,12 @@ public class CalendarController {
     @GetMapping("")
     public ResponseEntity<ArrayList<CalendarResponse>> getCalendar(
             @RequestHeader("Authorization") String accessToken,
-            @RequestParam Timestamp from, @RequestParam Timestamp to){
+            @RequestParam(defaultValue = "2000-01-01 00") String from, @RequestParam(defaultValue = "3000-12-31 23") String to){
         HttpStatus httpStatus = null;
-        ArrayList<CalendarResponse> body = calendarService.getCalendarList(accessToken, from, to);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
+
+
+        ArrayList<CalendarResponse> body = calendarService.getCalendarList(accessToken, LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
 
         if (body != null) {
             httpStatus = HttpStatus.OK;
@@ -39,7 +44,7 @@ public class CalendarController {
     @PostMapping("")
     public ResponseEntity<CalendarResponse> writeCalendar(
             @RequestHeader("Authorization") String accessToken,
-            CalendarRequest request) {
+            @RequestBody CalendarRequest request) {
         HttpStatus httpStatus = null;
 
         CalendarResponse body = calendarService.writeCalendar(accessToken, request);
@@ -56,7 +61,7 @@ public class CalendarController {
     @PutMapping("")
     public ResponseEntity<CalendarResponse> updateCalendar(
             @RequestHeader("Authorization") String accessToken,
-            CalendarRequest request){
+            @RequestBody CalendarRequest request){
         HttpStatus httpStatus = null;
 
         CalendarResponse body = calendarService.updateCalendar(accessToken, request);

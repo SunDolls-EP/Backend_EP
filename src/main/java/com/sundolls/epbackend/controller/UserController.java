@@ -1,9 +1,11 @@
 package com.sundolls.epbackend.controller;
 
 import com.sundolls.epbackend.dto.request.UserPatchRequest;
+import com.sundolls.epbackend.dto.response.FriendResponse;
 import com.sundolls.epbackend.dto.response.UserResponse;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.filter.JwtProvider;
+import com.sundolls.epbackend.repository.UserRepository;
 import com.sundolls.epbackend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,13 +16,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
-
     private final UserService userService;
     private final JwtProvider jwtProvider;
 
@@ -49,7 +51,7 @@ public class UserController {
     public ResponseEntity<UserResponse> updateUserInfo(
             @RequestHeader(value = "Authorization")String accessTokenString,
             @RequestBody UserPatchRequest request){
-        User user = userService.updateUser(request,accessTokenString);
+        User user = userService.updateUser(request, jwtProvider.getUsername(accessTokenString));
         HttpStatus httpStatus = null;
         UserResponse body = new UserResponse();
         if (user!=null){
@@ -80,8 +82,43 @@ public class UserController {
    public ResponseEntity<UserResponse> requestFriend(
            @RequestHeader(value = "Authorization")String accessTokenString,
            @PathVariable String username) {
-        return null;
+        UserResponse body = userService.requestFriend(username, jwtProvider.getUsername(accessTokenString));
+        HttpStatus httpStatus = null;
+        if (body != null){
+            httpStatus = HttpStatus.OK;
+        } else {
+            httpStatus = HttpStatus.NOT_FOUND;
+        }
+        return new ResponseEntity<>(body, httpStatus);
    }
+
+   @GetMapping("/user/friend")
+   public ResponseEntity<ArrayList<FriendResponse>> getFriends(
+           @RequestHeader(value = "Authorization")String accessTokenString) {
+        ArrayList<FriendResponse> body = userService.getFriendList(jwtProvider.getUsername(accessTokenString));
+        HttpStatus httpStatus = null;
+        if (body != null){
+            httpStatus = HttpStatus.OK;
+        } else {
+            httpStatus = HttpStatus.UNAUTHORIZED;
+        }
+        return new ResponseEntity<>(body, httpStatus);
+   }
+
+   @DeleteMapping("/user/friend/{username}")
+   public ResponseEntity<FriendResponse> deleteFriend(
+           @RequestHeader(value = "Authorization")String accessTokenString,
+           @PathVariable String username ){
+        FriendResponse body = userService.deleteFriend(username, jwtProvider.getUsername(accessTokenString));
+        HttpStatus httpStatus = null;
+        if (body != null) {
+            httpStatus = HttpStatus.OK;
+        } else {
+            httpStatus = HttpStatus.NOT_FOUND;
+        }
+        return new ResponseEntity<>(body, httpStatus);
+   }
+
 
    private void setUserResponseBody(UserResponse body, User user){
        body.setUsername(user.getUsername());

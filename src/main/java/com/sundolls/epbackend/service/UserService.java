@@ -58,8 +58,8 @@ public class UserService {
     }
 
 
-    public User updateUser(UserPatchRequest request, String accessToken){
-        Optional<User> optionalUser = userRepository.findById(jwtProvider.getUsername(accessToken));
+    public User updateUser(UserPatchRequest request, String userId){
+        Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
             return null;
         }
@@ -78,13 +78,19 @@ public class UserService {
         return optionalUser.get();
     }
 
-    public UserResponse requestUser(String username, String accessToken){
+    public UserResponse requestFriend(String username, String userId){
         Optional<User> optionalUser = userRepository.findByUsername(username);
-        if(optionalUser.isEmpty()) return null;
+        if(optionalUser.isEmpty()){
+            log.info("Target Not Found");
+            return null;
+        }
         User targetUser = optionalUser.get();
 
-        optionalUser = userRepository.findByUsername(jwtProvider.getUsername(accessToken));
-        if(optionalUser.isEmpty()) return null;
+        optionalUser = userRepository.findById(userId);
+        if(optionalUser.isEmpty()){
+            log.info("Requester Not Found");
+            return null;
+        }
         User requesterUser = optionalUser.get();
 
         FriendId friendId = new FriendId();
@@ -109,8 +115,8 @@ public class UserService {
 
     }
 
-    public ArrayList<FriendResponse> getFriendList(String accessToken){
-        Optional<User> optionalUser = userRepository.findById(jwtProvider.getUsername(accessToken));
+    public ArrayList<FriendResponse> getFriendList(String userId){
+        Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
             return null;
         }
@@ -125,9 +131,18 @@ public class UserService {
 
         for (Friend friend : friends){
             FriendResponse element = new FriendResponse();
-            element.setUsername(friend.getTargetUser().getUsername());
+
+            //friend의 user가 리소스 요청자와 같은가
+            if(friend.getUser().getUsername().equals(user.getUsername())) {
+                element.setUsername(friend.getTargetUser().getUsername());
+                element.setSchoolName(friend.getTargetUser().getSchoolName());
+            } else {
+                element.setUsername(friend.getUser().getUsername());
+                element.setSchoolName(friend.getUser().getSchoolName());
+            }
             element.setAccepted(friend.isAccepted());
-            element.setSchoolName(friend.getTargetUser().getSchoolName());
+            element.setCreatedAt(friend.getCreatedAt());
+            element.setModifiedAt(friend.getModifiedAt());
             friendResponses.add(element);
         }
 
@@ -135,8 +150,8 @@ public class UserService {
 
     }
 
-    public FriendResponse deleteFriend(String username, String accessToken){
-        Optional<User> optionalUser = userRepository.findById(jwtProvider.getUsername(accessToken));
+    public FriendResponse deleteFriend(String username, String userId){
+        Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
             return null;
         }

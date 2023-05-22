@@ -1,7 +1,9 @@
 package com.sundolls.epbackend.entity;
 
 
+import com.sundolls.epbackend.entity.baseEntity.BaseTimeEntity;
 import com.sundolls.epbackend.entity.primaryKey.FriendId;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +14,9 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Table(name = "friend_tb")
 @Getter
-public class Friend {
+@Builder
+@AllArgsConstructor
+public class Friend extends BaseTimeEntity {
 
     @EmbeddedId
     private FriendId friendId;
@@ -29,13 +33,5 @@ public class Friend {
 
     @Column(name="ACCEPTED")
     private boolean accepted;
-
-    @Builder
-    public Friend(FriendId friendId, User user, User targetUser, boolean accepted){
-        this.friendId = friendId;
-        this.user = user;
-        this.targetUser = targetUser;
-        this.accepted = accepted;
-    }
 
 }

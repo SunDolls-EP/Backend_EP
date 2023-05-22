@@ -2,11 +2,11 @@ package com.sundolls.epbackend.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Setter
 @Getter
-public class FriendResponse {
-    private String username;
-    private String schoolName;
+@ToString
+public class FriendResponse extends UserResponse{
     private boolean accepted;
 }

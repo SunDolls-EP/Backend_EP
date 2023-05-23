@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class UserPatchRequest {
     private String username;
-    private String  schoolName;
+    private String schoolName;
 }

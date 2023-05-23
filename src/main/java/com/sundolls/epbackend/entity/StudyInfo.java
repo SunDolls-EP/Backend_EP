@@ -8,6 +8,7 @@ import org.springframework.data.annotation.CreatedDate;
 import javax.persistence.*;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "study_info_tb")
@@ -28,6 +29,6 @@ public class StudyInfo {
 
     @Column(name = "CREATED_AT")
     @CreatedDate
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
 }

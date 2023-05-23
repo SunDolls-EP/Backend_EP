@@ -4,6 +4,7 @@ import com.sundolls.epbackend.entity.primaryKey.UserTitleId;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_title_tb")
@@ -22,6 +23,9 @@ public class UserTitle {
     @JoinColumn(name = "TITLE_ID")
     @MapsId("titleId")
     private Title title;
+
+    @Column(name = "CREATED_AT")
+    private LocalDateTime createdAt;
 
 
 }

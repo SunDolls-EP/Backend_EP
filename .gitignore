@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 database.properties
 oauth.properties
+jwt.properties
 
 
 ### STS ###

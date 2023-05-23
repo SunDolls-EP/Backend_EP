@@ -28,19 +28,18 @@ public class CalendarService {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
 
-    public ArrayList<CalendarResponse> getCalendarList(String accessToken, Timestamp from, Timestamp to){
+    public ArrayList<CalendarResponse> getCalendarList(String accessToken, LocalDateTime from, LocalDateTime to){
         Optional<User> optionalUser = userRepository.findById(jwtProvider.getUsername(accessToken));
         if (optionalUser.isEmpty()) {
             return null;
         }
         User user  = optionalUser.get();
         ArrayList<Calendar> calendarArrayList = calendarRepository.findByCreatedAtBetweenAndUser(from, to, user);
+
         ArrayList<CalendarResponse> calendarResponseArrayList = new ArrayList<>();
         for (Calendar calendar : calendarArrayList) {
             CalendarResponse element = new CalendarResponse();
-            element.setContent(calendar.getContent());
-            element.setCreatedAt(calendar.getCreatedAt().toLocalDateTime());
-            element.setModifiedAt(calendar.getModifiedAt().toLocalDateTime());
+            setCalendarResponse(element, calendar);
             calendarResponseArrayList.add(element);
         }
 
@@ -61,9 +60,7 @@ public class CalendarService {
         calendarRepository.save(calendar);
 
         CalendarResponse calendarResponse = new CalendarResponse();
-        calendarResponse.setContent(calendar.getContent());
-        calendarResponse.setCreatedAt(calendar.getCreatedAt().toLocalDateTime());
-        calendarResponse.setModifiedAt(calendar.getModifiedAt().toLocalDateTime());
+        setCalendarResponse(calendarResponse, calendar);
 
         return calendarResponse;
     }
@@ -75,9 +72,9 @@ public class CalendarService {
             return null;
         }
         User user  = optionalUser.get();
-        LocalDateTime startAt = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.of(0,0,0));
+        LocalDateTime startAt = LocalDateTime.of(LocalDate.now(), LocalTime.of(0,0,0));
         LocalDateTime endAt = LocalDateTime.of(LocalDate.now(),LocalTime.of(23,59,59));
-        Optional<Calendar> optionalCalendar = calendarRepository.findByUserAndCreatedAtBetween(user,Timestamp.valueOf(startAt), Timestamp.valueOf(endAt));
+        Optional<Calendar> optionalCalendar = calendarRepository.findByUserAndCreatedAtBetween(user,startAt, endAt);
         if (optionalCalendar.isEmpty()) {
             return null;
         }
@@ -85,9 +82,14 @@ public class CalendarService {
         calendar.update(request.getContent());
 
         CalendarResponse calendarResponse = new CalendarResponse();
-        calendarResponse.setContent(calendar.getContent());
-        calendarResponse.setCreatedAt(calendar.getCreatedAt().toLocalDateTime());
-        calendarResponse.setModifiedAt(calendar.getModifiedAt().toLocalDateTime());
+        setCalendarResponse(calendarResponse, calendar);
+
         return calendarResponse;
+    }
+
+    private void setCalendarResponse(CalendarResponse calendarResponse, Calendar calendar){
+        calendarResponse.setContent(calendar.getContent());
+        calendarResponse.setCreatedAt(calendar.getCreatedAt());
+        calendarResponse.setModifiedAt(calendar.getModifiedAt());
     }
 }

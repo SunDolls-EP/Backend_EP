@@ -39,8 +39,7 @@ public class UserController {
             setUserResponseBody(body, user);
             headers.add("Authorization", jwtProvider.generateToken(user.getId()));
 
-        }
-        else{
+        } else{
             httpStatus=HttpStatus.BAD_REQUEST;
         }
 
@@ -57,8 +56,7 @@ public class UserController {
         if (user!=null){
             httpStatus = HttpStatus.OK;
             setUserResponseBody(body, user);
-        }
-        else {
+        } else {
             httpStatus=HttpStatus.BAD_REQUEST;
         }
         return new ResponseEntity<>(body,httpStatus);
@@ -108,7 +106,7 @@ public class UserController {
    @DeleteMapping("/user/friend/{username}")
    public ResponseEntity<FriendResponse> deleteFriend(
            @RequestHeader(value = "Authorization")String accessTokenString,
-           @PathVariable String username ){
+           @PathVariable String username ) {
         FriendResponse body = userService.deleteFriend(username, jwtProvider.getUsername(accessTokenString));
         HttpStatus httpStatus = null;
         if (body != null) {
@@ -119,6 +117,19 @@ public class UserController {
         return new ResponseEntity<>(body, httpStatus);
    }
 
+   @PatchMapping("/user/friend/{username}")
+   public ResponseEntity<FriendResponse> acceptFriend(
+           @RequestHeader(value = "Authorization")String accessTokenString,
+           @PathVariable String username) {
+        FriendResponse body = userService.acceptFriend(username, jwtProvider.getUsername(accessTokenString));
+       HttpStatus httpStatus = null;
+       if (body != null) {
+           httpStatus = HttpStatus.OK;
+       } else {
+           httpStatus = HttpStatus.NOT_FOUND;
+       }
+       return new ResponseEntity<>(body, httpStatus);
+   }
 
    private void setUserResponseBody(UserResponse body, User user){
        body.setUsername(user.getUsername());

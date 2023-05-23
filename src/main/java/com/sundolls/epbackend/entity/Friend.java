@@ -34,4 +34,7 @@ public class Friend extends BaseTimeEntity {
     @Column(name="ACCEPTED")
     private boolean accepted;
 
+    public void accept(){
+        accepted = true;
+    }
 }

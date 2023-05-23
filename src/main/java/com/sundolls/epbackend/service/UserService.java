@@ -14,7 +14,6 @@ import com.sundolls.epbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -28,7 +27,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
-    private final JwtProvider jwtProvider;
 
     public User join(String  idTokenString) throws GeneralSecurityException, IOException {
         GoogleIdToken idToken = googleIdTokenVerifier.verify(idTokenString);
@@ -64,11 +62,9 @@ public class UserService {
             return null;
         }
         User user = optionalUser.get();
-        log.info(request.getUsername()+" "+request.getSchoolName());
         user.update(request.getUsername(),request.getSchoolName());
 
         userRepository.save(user);
-        log.info(user.getSchoolName()+" "+user.getUsername());
         return user;
     }
 
@@ -130,19 +126,7 @@ public class UserService {
         ArrayList<FriendResponse> friendResponses = new ArrayList<>();
 
         for (Friend friend : friends){
-            FriendResponse element = new FriendResponse();
-
-            //friend의 user가 리소스 요청자와 같은가
-            if(friend.getUser().getUsername().equals(user.getUsername())) {
-                element.setUsername(friend.getTargetUser().getUsername());
-                element.setSchoolName(friend.getTargetUser().getSchoolName());
-            } else {
-                element.setUsername(friend.getUser().getUsername());
-                element.setSchoolName(friend.getUser().getSchoolName());
-            }
-            element.setAccepted(friend.isAccepted());
-            element.setCreatedAt(friend.getCreatedAt());
-            element.setModifiedAt(friend.getModifiedAt());
+            FriendResponse element = makeResponse(user, friend);
             friendResponses.add(element);
         }
 
@@ -151,17 +135,9 @@ public class UserService {
     }
 
     public FriendResponse deleteFriend(String username, String userId){
-        Optional<User> optionalUser = userRepository.findById(userId);
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-        User user = optionalUser.get();
-
-        optionalUser = userRepository.findByUsername(username);
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-        User targetUser = optionalUser.get();
+        User user = getUser(userId);
+        User targetUser = getTarget(username);
+        if(user==null || targetUser == null) return null;
 
         Optional<Friend> optionalFriend = friendRepository.findByUserAndTargetUser(user, targetUser);
         if (optionalFriend.isEmpty()){
@@ -170,10 +146,7 @@ public class UserService {
         if (optionalFriend.isEmpty()) return null;
         Friend friend = optionalFriend.get();
 
-        FriendResponse friendResponse = new FriendResponse();
-        friendResponse.setUsername(friend.getTargetUser().getUsername());
-        friendResponse.setAccepted(friend.isAccepted());
-        friendResponse.setSchoolName(friend.getTargetUser().getSchoolName());
+        FriendResponse friendResponse = makeResponse(user, friend);
 
         friendRepository.delete(friend);
 
@@ -181,6 +154,59 @@ public class UserService {
 
     }
 
+    public FriendResponse acceptFriend(String username, String userId){
+        User user = getUser(userId);
+        User targetUser = getTarget(username);
+        if(user==null || targetUser == null) return null;
 
+        Optional<Friend> optionalFriend = friendRepository.findByUserAndTargetUser(user, targetUser);
+        if (optionalFriend.isEmpty()){
+            optionalFriend = friendRepository.findByUserAndTargetUser(targetUser, user);
+        } else {
+            return makeResponse(user, optionalFriend.get());
+        }
+        if (optionalFriend.isEmpty()) return null;
+        Friend friend = optionalFriend.get();
+
+        friend.accept();
+        friendRepository.save(friend);
+
+        return makeResponse(user, friend);
+    }
+
+
+    private User getUser(String userId){
+        Optional<User> optionalUser = userRepository.findById(userId);
+        User user = null;
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get();
+        }
+        return user;
+    }
+
+    private User getTarget(String username){
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+        User target = null;
+        if (optionalUser.isPresent()) {
+            target = optionalUser.get();
+        }
+        return target;
+    }
+
+    private FriendResponse makeResponse(User user, Friend friend){
+        FriendResponse friendResponse = new FriendResponse();
+        if(friend.getUser().getUsername().equals(user.getUsername())) {
+            friendResponse.setUsername(friend.getTargetUser().getUsername());
+            friendResponse.setSchoolName(friend.getTargetUser().getSchoolName());
+        } else {
+            friendResponse.setUsername(friend.getUser().getUsername());
+            friendResponse.setSchoolName(friend.getUser().getSchoolName());
+        }
+        friendResponse.setAccepted(friend.isAccepted());
+        friendResponse.setCreatedAt(friend.getCreatedAt());
+        friendResponse.setModifiedAt(friend.getModifiedAt());
+
+        return friendResponse;
+    }
 
 }

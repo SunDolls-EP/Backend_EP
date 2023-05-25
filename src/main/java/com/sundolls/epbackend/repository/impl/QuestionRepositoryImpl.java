@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sundolls.epbackend.entity.Question;
 import com.sundolls.epbackend.repository.QuestionRepositoryCustom;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -19,14 +20,9 @@ import java.util.List;
 import static com.sundolls.epbackend.entity.QQuestion.question;
 
 @Repository
-public class QuestionRepositoryImpl extends QuerydslRepositorySupport implements QuestionRepositoryCustom {
+@RequiredArgsConstructor
+public class QuestionRepositoryImpl implements QuestionRepositoryCustom {
     private final JPAQueryFactory queryFactory;
-
-    public QuestionRepositoryImpl(JPAQueryFactory queryFactory){
-        super(Question.class);
-        this.queryFactory = queryFactory;
-    }
-
 
     @Override
     public Page<Question> searchQuestions(Pageable pageable, String username, String title, String content, LocalDateTime from, LocalDateTime to) {
@@ -34,8 +30,6 @@ public class QuestionRepositoryImpl extends QuerydslRepositorySupport implements
         JPAQuery<Question> query = queryFactory.selectFrom(question)
                 .where(eqUsername(username), eqTitle(title), eqContent(content), eqCreatedAt(from, to));
 
-        List<Question> questions = this.getQuerydsl().applyPagination(pageable, query).fetch();
-        return new PageImpl<Question>(questions, pageable, query.fetch().size());
     }
 
     private BooleanExpression eqUsername(String username) {

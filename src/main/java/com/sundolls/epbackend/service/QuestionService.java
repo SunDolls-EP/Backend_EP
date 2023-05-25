@@ -34,6 +34,7 @@ public class QuestionService {
                 .content(request.getContent())
                 .build();
         questionRepository.save(question);
+
         return QuestionMapper.MAPPER.toDto(question);
     }
 
@@ -41,6 +42,7 @@ public class QuestionService {
         Page<Question> questions = questionRepository.searchQuestions(pageable, username, title, content, from, to);
         return questions.map(QuestionMapper.MAPPER::toDto);
     }
+
 
 
 

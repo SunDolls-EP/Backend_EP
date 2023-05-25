@@ -6,6 +6,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 
-public interface QuestionRepositoryCustom {
+public interface QuestionRepositoryCustom{
     Page<Question> searchQuestions(Pageable pageable, String username, String title, String content, LocalDateTime from, LocalDateTime to);
 }

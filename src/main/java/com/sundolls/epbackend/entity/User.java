@@ -1,6 +1,7 @@
 package com.sundolls.epbackend.entity;
 
 import com.sundolls.epbackend.entity.baseEntity.BaseTimeEntity;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,8 @@ import javax.persistence.*;
 @Table(name = "user_tb")
 @NoArgsConstructor
 @Getter
+@AllArgsConstructor
+@Builder
 public class User extends BaseTimeEntity {
     @Id
     @Column(name = "ID")
@@ -29,15 +32,15 @@ public class User extends BaseTimeEntity {
     @Column(name="SCHOOL_NAME")
     private String schoolName;
 
-
-
-    @Builder
-    public User(String id, String username, String password, String schoolName, String email){
-        this.id = id;
-        this.username = username;
-        this.password =password;
-        this.schoolName=schoolName;
-        this.email = email;
+    @Override
+    public boolean equals(Object obj) {
+        User user;
+        if (obj instanceof User) {
+            user = (User) obj;
+        } else {
+            return false;
+        }
+        return this.id.equals(user.getId());
     }
 
     public void update(String username, String schoolName){

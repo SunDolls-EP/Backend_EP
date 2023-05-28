@@ -2,6 +2,7 @@ package com.sundolls.epbackend.repository.impl;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.sundolls.epbackend.entity.QQuestion;
 import com.sundolls.epbackend.entity.Question;
 import com.sundolls.epbackend.repository.QuestionRepositoryCustom;
 import lombok.RequiredArgsConstructor;
@@ -20,17 +21,26 @@ import java.util.List;
 import static com.sundolls.epbackend.entity.QQuestion.question;
 
 @Repository
-@RequiredArgsConstructor
-public class QuestionRepositoryImpl implements QuestionRepositoryCustom {
+public class QuestionRepositoryImpl extends QuerydslRepositorySupport implements QuestionRepositoryCustom {
     private final JPAQueryFactory queryFactory;
+
+    private QuestionRepositoryImpl (JPAQueryFactory queryFactory) {
+        super(QQuestion.class);
+        this.queryFactory = queryFactory;
+    }
+
 
     @Override
     public Page<Question> searchQuestions(Pageable pageable, String username, String title, String content, LocalDateTime from, LocalDateTime to) {
 
         JPAQuery<Question> query = queryFactory.selectFrom(question)
                 .where(eqUsername(username), eqTitle(title), eqContent(content), eqCreatedAt(from, to));
+        int totalCount = query.fetch().size();
+        List<Question> questions = getQuerydsl().applyPagination(pageable, query).fetch();
 
+        return new PageImpl<Question>(questions, pageable, totalCount);
     }
+
 
     private BooleanExpression eqUsername(String username) {
         if (username == null || username.isEmpty()) {

@@ -54,4 +54,14 @@ public class QuestionController {
 
         return new ResponseEntity<>(body, status);
     }
+
+    @PutMapping("/{questionId}")
+    public ResponseEntity<QuestionResponse> updateQuestion(
+            @RequestHeader(name = "Authorization") String accessToken,
+            @PathVariable Long questionId,
+            @RequestBody QuestionRequest request
+    ){
+        return questionService.updateQuestion(questionId, jwtProvider.getUsername(accessToken), request);
+    }
+
 }

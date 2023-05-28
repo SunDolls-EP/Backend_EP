@@ -9,9 +9,12 @@ import com.sundolls.epbackend.mapper.impl.QuestionMapper;
 import com.sundolls.epbackend.repository.QuestionRepository;
 import com.sundolls.epbackend.repository.UserRepository;
 import com.sundolls.epbackend.repository.impl.QuestionRepositoryImpl;
+import io.swagger.models.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -43,7 +46,27 @@ public class QuestionService {
         return questions.map(QuestionMapper.MAPPER::toDto);
     }
 
+    public ResponseEntity<QuestionResponse> updateQuestion(Long questionId, String userId, QuestionRequest request) {
+        HttpStatus status = HttpStatus.OK;
 
+        User user = userRepository.findById(userId).get();
+
+        Optional<Question> optionalQuestion = questionRepository.findById(questionId);
+        if (optionalQuestion.isEmpty()) {
+            status = HttpStatus.NOT_FOUND;
+            return new ResponseEntity<>(status);
+        }
+        Question question = optionalQuestion.get();
+        if (!user.equals(question.getUser())) {
+            status = HttpStatus.FORBIDDEN;
+            return new ResponseEntity<>(status);
+        }
+
+        question.update(request.getTitle(), request.getContent());
+        questionRepository.save(question);
+
+        return new ResponseEntity<>(QuestionMapper.MAPPER.toDto(question), status);
+    }
 
 
 }

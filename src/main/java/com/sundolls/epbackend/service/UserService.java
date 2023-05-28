@@ -2,21 +2,28 @@ package com.sundolls.epbackend.service;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.sundolls.epbackend.dto.request.StudyInfoRequest;
 import com.sundolls.epbackend.dto.request.UserPatchRequest;
 import com.sundolls.epbackend.dto.response.FriendResponse;
 import com.sundolls.epbackend.dto.response.UserResponse;
 import com.sundolls.epbackend.entity.Friend;
+import com.sundolls.epbackend.entity.StudyInfo;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.entity.primaryKey.FriendId;
 import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.repository.FriendRepository;
+import com.sundolls.epbackend.repository.StudyInfoRepository;
 import com.sundolls.epbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.sql.Time;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -27,6 +34,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
+    private final StudyInfoRepository studyInfoRepository;
 
     public User join(String  idTokenString) throws GeneralSecurityException, IOException {
         GoogleIdToken idToken = googleIdTokenVerifier.verify(idTokenString);
@@ -174,6 +182,29 @@ public class UserService {
         return makeResponse(user, friend);
     }
 
+    public ResponseEntity<Void> postStudyInfo(String userId, StudyInfoRequest request) {
+        HttpStatus status = HttpStatus.OK;
+
+        User user = getUser(userId);
+        if (user==null) {
+            status = HttpStatus.UNAUTHORIZED;
+            return new ResponseEntity<>(status);
+        }
+
+        StudyInfo studyInfo = StudyInfo.builder()
+                .user(user)
+                .createdAt(request.getStartAt())
+                .time(new Time(Duration.between(request.getEndAt(), request.getStartAt()).getSeconds()))
+                .build();
+        studyInfoRepository.save(studyInfo);
+
+        return new ResponseEntity<>(status);
+    }
+
+
+
+
+
 
     private User getUser(String userId){
         Optional<User> optionalUser = userRepository.findById(userId);
@@ -208,5 +239,6 @@ public class UserService {
 
         return friendResponse;
     }
+
 
 }

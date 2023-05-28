@@ -1,5 +1,6 @@
 package com.sundolls.epbackend.controller;
 
+import com.sundolls.epbackend.dto.request.StudyInfoRequest;
 import com.sundolls.epbackend.dto.request.UserPatchRequest;
 import com.sundolls.epbackend.dto.response.FriendResponse;
 import com.sundolls.epbackend.dto.response.UserResponse;
@@ -129,6 +130,14 @@ public class UserController {
            httpStatus = HttpStatus.NOT_FOUND;
        }
        return new ResponseEntity<>(body, httpStatus);
+   }
+
+   @PostMapping("user/study")
+    public ResponseEntity<Void> postStudy(
+           @RequestHeader(value = "Authorization")String accessTokenString,
+           @RequestBody StudyInfoRequest request
+           ) {
+        return userService.postStudyInfo(jwtProvider.getUsername(accessTokenString), request);
    }
 
    private void setUserResponseBody(UserResponse body, User user){

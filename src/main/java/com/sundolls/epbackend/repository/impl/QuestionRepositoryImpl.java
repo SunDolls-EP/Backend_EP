@@ -1,21 +1,18 @@
 package com.sundolls.epbackend.repository.impl;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sundolls.epbackend.entity.QQuestion;
 import com.sundolls.epbackend.entity.Question;
 import com.sundolls.epbackend.repository.QuestionRepositoryCustom;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static com.sundolls.epbackend.entity.QQuestion.question;
@@ -33,8 +30,8 @@ public class QuestionRepositoryImpl extends QuerydslRepositorySupport implements
     @Override
     public Page<Question> searchQuestions(Pageable pageable, String username, String title, String content, LocalDateTime from, LocalDateTime to) {
 
-        JPAQuery<Question> query = queryFactory.selectFrom(question)
-                .where(eqUsername(username), eqTitle(title), eqContent(content), eqCreatedAt(from, to));
+        JPAQuery<Question> query = queryFactory.select(Projections.bean(Question.class, question.id, question.title)).from(question)
+                .where(eqUsername(username), containsTitle(title), containsContent(content), betweenCreatedAt(from, to));
         int totalCount = query.fetch().size();
         List<Question> questions = getQuerydsl().applyPagination(pageable, query).fetch();
 
@@ -49,21 +46,21 @@ public class QuestionRepositoryImpl extends QuerydslRepositorySupport implements
         return question.user.username.eq(username);
     }
 
-    private BooleanExpression eqTitle(String title) {
+    private BooleanExpression containsTitle(String title) {
         if (title == null || title.isEmpty()) {
             return null;
         }
-        return question.title.eq(title);
+        return question.title.contains(title);
     }
 
-    private BooleanExpression eqContent(String content) {
+    private BooleanExpression containsContent(String content) {
         if (content == null || content.isEmpty()) {
             return null;
         }
-        return question.content.eq(content);
+        return question.content.contains(content);
     }
 
-    private BooleanExpression eqCreatedAt(LocalDateTime from, LocalDateTime to) {
+    private BooleanExpression betweenCreatedAt(LocalDateTime from, LocalDateTime to) {
         return question.createdAt.between(from, to);
     }
 }

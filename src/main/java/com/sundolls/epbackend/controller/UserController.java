@@ -3,6 +3,7 @@ package com.sundolls.epbackend.controller;
 import com.sundolls.epbackend.dto.request.StudyInfoRequest;
 import com.sundolls.epbackend.dto.request.UserPatchRequest;
 import com.sundolls.epbackend.dto.response.FriendResponse;
+import com.sundolls.epbackend.dto.response.StudyInfoResponse;
 import com.sundolls.epbackend.dto.response.UserResponse;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.filter.JwtProvider;
@@ -17,7 +18,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -92,7 +96,7 @@ public class UserController {
    }
 
    @GetMapping("/user/friend")
-   public ResponseEntity<ArrayList<FriendResponse>> getFriends(
+   public ResponseEntity<List<FriendResponse>> getFriends(
            @RequestHeader(value = "Authorization")String accessTokenString) {
         ArrayList<FriendResponse> body = userService.getFriendList(jwtProvider.getUsername(accessTokenString));
         HttpStatus httpStatus = null;
@@ -132,13 +136,23 @@ public class UserController {
        return new ResponseEntity<>(body, httpStatus);
    }
 
-   @PostMapping("user/study")
+   @PostMapping("/user/study")
     public ResponseEntity<Void> postStudy(
            @RequestHeader(value = "Authorization")String accessTokenString,
            @RequestBody StudyInfoRequest request
            ) {
         return userService.postStudyInfo(jwtProvider.getUsername(accessTokenString), request);
    }
+
+   @GetMapping("/user/study")
+   public ResponseEntity<List<StudyInfoResponse>> getStudyInfo(
+           @RequestHeader(value = "Authorization")String accessTokenString,
+           @RequestParam(defaultValue = "2000-01-01 00") String from,
+           @RequestParam(defaultValue = "3000-12-31 23") String to) {
+       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
+       return userService.getStudyInfos(LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
+   }
+
 
    private void setUserResponseBody(UserResponse body, User user){
        body.setUsername(user.getUsername());

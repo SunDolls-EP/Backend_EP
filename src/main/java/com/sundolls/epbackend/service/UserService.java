@@ -5,12 +5,14 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.sundolls.epbackend.dto.request.StudyInfoRequest;
 import com.sundolls.epbackend.dto.request.UserPatchRequest;
 import com.sundolls.epbackend.dto.response.FriendResponse;
+import com.sundolls.epbackend.dto.response.StudyInfoResponse;
 import com.sundolls.epbackend.dto.response.UserResponse;
 import com.sundolls.epbackend.entity.Friend;
 import com.sundolls.epbackend.entity.StudyInfo;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.entity.primaryKey.FriendId;
 import com.sundolls.epbackend.filter.JwtProvider;
+import com.sundolls.epbackend.mapper.impl.StudyInfoMapper;
 import com.sundolls.epbackend.repository.FriendRepository;
 import com.sundolls.epbackend.repository.StudyInfoRepository;
 import com.sundolls.epbackend.repository.UserRepository;
@@ -19,18 +21,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.sql.Time;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
+    private final StudyInfoMapper studyInfoMapper;
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
@@ -201,6 +207,15 @@ public class UserService {
         return new ResponseEntity<>(status);
     }
 
+    public ResponseEntity<List<StudyInfoResponse>> getStudyInfos(LocalDateTime from, LocalDateTime to) {
+        HttpStatus status = HttpStatus.OK;
+
+        List<StudyInfo> studyInfos =  studyInfoRepository.findByCreatedAtBetween(from, to);
+        List<StudyInfoResponse> body = studyInfos.stream().map(studyInfoMapper.MAPPER::toDto).toList();
+        if (body.isEmpty()) status = HttpStatus.NOT_FOUND;
+
+        return new ResponseEntity<>(body, status);
+    }
 
 
 

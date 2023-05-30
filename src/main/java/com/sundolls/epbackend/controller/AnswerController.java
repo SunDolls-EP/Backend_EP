@@ -43,4 +43,12 @@ public class AnswerController {
     ) {
         return answerService.updateAnswer(answerId, jwtProvider.getUsername(accessToken), request);
     }
+
+    @DeleteMapping("/{answerId}")
+    public ResponseEntity<AnswerResponse> deleteAnswer(
+            @RequestHeader("Authorization") String accessToken,
+            @PathVariable(name = "answerId") Long answerId
+    ) {
+        return answerService.deleteAnswer(answerId, jwtProvider.getUsername(accessToken));
+    }
 }

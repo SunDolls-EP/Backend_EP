@@ -107,4 +107,36 @@ public class AnswerService {
 
     }
 
+    public ResponseEntity<AnswerResponse> deleteAnswer(Long answerId, String userId) {
+        HttpStatus status = HttpStatus.OK;
+
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+            return new ResponseEntity<>(status);
+        }
+        User user = optionalUser.get();
+
+        Optional<Answer> optionalAnswer = answerRepository.findById(answerId);
+        if (optionalAnswer.isEmpty()) {
+            status = HttpStatus.NOT_FOUND;
+            return new ResponseEntity<>(status);
+        }
+        Answer answer = optionalAnswer.get();
+
+        optionalUser = userRepository.findById(answer.getUser().getId());
+        if (optionalUser.isEmpty()) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+            return new ResponseEntity<>(status);
+        }
+        User answerWriter = optionalUser.get();
+
+        if (!user.equals(answerWriter)) {
+            status = HttpStatus.FORBIDDEN;
+            return new ResponseEntity<>(status);
+        }
+
+        answerRepository.delete(answer);
+        return new ResponseEntity<>(AnswerMapper.MAPPER.toDto(answer), status);
+    }
 }

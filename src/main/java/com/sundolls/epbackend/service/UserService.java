@@ -11,8 +11,7 @@ import com.sundolls.epbackend.entity.Friend;
 import com.sundolls.epbackend.entity.StudyInfo;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.entity.primaryKey.FriendId;
-import com.sundolls.epbackend.filter.JwtProvider;
-import com.sundolls.epbackend.mapper.impl.StudyInfoMapper;
+import com.sundolls.epbackend.mapper.StudyInfoMapper;
 import com.sundolls.epbackend.repository.FriendRepository;
 import com.sundolls.epbackend.repository.StudyInfoRepository;
 import com.sundolls.epbackend.repository.UserRepository;
@@ -21,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -200,7 +198,7 @@ public class UserService {
         StudyInfo studyInfo = StudyInfo.builder()
                 .user(user)
                 .createdAt(request.getStartAt())
-                .time(new Time(Duration.between(request.getEndAt(), request.getStartAt()).getSeconds()))
+                .time(Duration.between(request.getEndAt(), request.getStartAt()).getSeconds())
                 .build();
         studyInfoRepository.save(studyInfo);
 
@@ -216,7 +214,6 @@ public class UserService {
 
         return new ResponseEntity<>(body, status);
     }
-
 
 
 
@@ -254,6 +251,5 @@ public class UserService {
 
         return friendResponse;
     }
-
 
 }

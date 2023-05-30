@@ -12,5 +12,5 @@ import java.time.LocalTime;
 public class StudyInfoResponse {
     private LocalDateTime startAt;
     private LocalDateTime endAt;
-    private LocalTime totalTime;
+    private Time totalTime;
 }

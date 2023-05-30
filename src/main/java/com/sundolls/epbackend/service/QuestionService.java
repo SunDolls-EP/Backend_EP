@@ -2,14 +2,11 @@ package com.sundolls.epbackend.service;
 
 import com.sundolls.epbackend.dto.request.QuestionRequest;
 import com.sundolls.epbackend.dto.response.QuestionResponse;
-import com.sundolls.epbackend.dto.response.UserResponse;
 import com.sundolls.epbackend.entity.Question;
 import com.sundolls.epbackend.entity.User;
-import com.sundolls.epbackend.mapper.impl.QuestionMapper;
+import com.sundolls.epbackend.mapper.QuestionMapper;
 import com.sundolls.epbackend.repository.QuestionRepository;
 import com.sundolls.epbackend.repository.UserRepository;
-import com.sundolls.epbackend.repository.impl.QuestionRepositoryImpl;
-import io.swagger.models.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

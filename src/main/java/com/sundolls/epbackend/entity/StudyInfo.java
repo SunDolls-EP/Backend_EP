@@ -29,7 +29,7 @@ public class StudyInfo {
     private User user;
 
     @Column(name = "TOTAL_STUDY_TIME")
-    private Time time;
+    private Long time;
 
     @Column(name = "CREATED_AT")
     @CreatedDate

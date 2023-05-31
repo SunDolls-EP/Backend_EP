@@ -7,6 +7,8 @@ import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.mapper.QuestionMapper;
 import com.sundolls.epbackend.repository.QuestionRepository;
 import com.sundolls.epbackend.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,8 +25,8 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
 
-    public QuestionResponse writeQuestion(String userId, QuestionRequest request) {
-        Optional<User> optionalUser = userRepository.findById(userId);
+    public QuestionResponse writeQuestion(Jws<Claims> payload, QuestionRequest request) {
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
         if(optionalUser.isEmpty()) return null;
         User writer = optionalUser.get();
 
@@ -43,10 +45,10 @@ public class QuestionService {
         return questions.map(QuestionMapper.MAPPER::toDto);
     }
 
-    public ResponseEntity<QuestionResponse> updateQuestion(Long questionId, String userId, QuestionRequest request) {
+    public ResponseEntity<QuestionResponse> updateQuestion(Long questionId, Jws<Claims> payload, QuestionRequest request) {
         HttpStatus status = HttpStatus.OK;
 
-        User user = userRepository.findById(userId).get();
+        User user = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag")).get();
 
         Optional<Question> optionalQuestion = questionRepository.findById(questionId);
         if (optionalQuestion.isEmpty()) {

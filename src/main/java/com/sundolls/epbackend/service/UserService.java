@@ -15,6 +15,8 @@ import com.sundolls.epbackend.mapper.StudyInfoMapper;
 import com.sundolls.epbackend.repository.FriendRepository;
 import com.sundolls.epbackend.repository.StudyInfoRepository;
 import com.sundolls.epbackend.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,7 +36,6 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
-    private final StudyInfoMapper studyInfoMapper;
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
@@ -68,12 +69,9 @@ public class UserService {
     }
 
 
-    public User updateUser(UserPatchRequest request, String userId){
-        Optional<User> optionalUser = userRepository.findById(userId);
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-        User user = optionalUser.get();
+    public User updateUser(UserPatchRequest request, Jws<Claims> payload){
+        User user = getUser(payload);
+
         user.update(request.getUsername(),request.getSchoolName());
 
         userRepository.save(user);
@@ -86,7 +84,7 @@ public class UserService {
         return optionalUser.get();
     }
 
-    public UserResponse requestFriend(String username, String userId){
+    public UserResponse requestFriend(String username,Jws<Claims> payload){
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if(optionalUser.isEmpty()){
             log.info("Target Not Found");
@@ -94,12 +92,7 @@ public class UserService {
         }
         User targetUser = optionalUser.get();
 
-        optionalUser = userRepository.findById(userId);
-        if(optionalUser.isEmpty()){
-            log.info("Requester Not Found");
-            return null;
-        }
-        User requesterUser = optionalUser.get();
+        User requesterUser = getUser(payload);
 
         FriendId friendId = new FriendId();
         friendId.setUserId(requesterUser.getId());
@@ -123,12 +116,8 @@ public class UserService {
 
     }
 
-    public ArrayList<FriendResponse> getFriendList(String userId){
-        Optional<User> optionalUser = userRepository.findById(userId);
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-        User user = optionalUser.get();
+    public ArrayList<FriendResponse> getFriendList(Jws<Claims> payload){
+        User user = getUser(payload);
 
         ArrayList<Friend> friends = new ArrayList<>();
 
@@ -146,8 +135,8 @@ public class UserService {
 
     }
 
-    public FriendResponse deleteFriend(String username, String userId){
-        User user = getUser(userId);
+    public FriendResponse deleteFriend(String username,Jws<Claims> payload){
+        User user = getUser(payload);
         User targetUser = getTarget(username);
         if(user==null || targetUser == null) return null;
 
@@ -166,8 +155,8 @@ public class UserService {
 
     }
 
-    public FriendResponse acceptFriend(String username, String userId){
-        User user = getUser(userId);
+    public FriendResponse acceptFriend(String username, Jws<Claims> payload){
+        User user = getUser(payload);
         User targetUser = getTarget(username);
         if(user==null || targetUser == null) return null;
 
@@ -186,10 +175,10 @@ public class UserService {
         return makeResponse(user, friend);
     }
 
-    public ResponseEntity<Void> postStudyInfo(String userId, StudyInfoRequest request) {
+    public ResponseEntity<Void> postStudyInfo(Jws<Claims> payload, StudyInfoRequest request) {
         HttpStatus status = HttpStatus.OK;
 
-        User user = getUser(userId);
+        User user = getUser(payload);
         if (user==null) {
             status = HttpStatus.UNAUTHORIZED;
             return new ResponseEntity<>(status);
@@ -209,7 +198,7 @@ public class UserService {
         HttpStatus status = HttpStatus.OK;
 
         List<StudyInfo> studyInfos =  studyInfoRepository.findByCreatedAtBetween(from, to);
-        List<StudyInfoResponse> body = studyInfos.stream().map(studyInfoMapper.MAPPER::toDto).toList();
+        List<StudyInfoResponse> body = studyInfos.stream().map(StudyInfoMapper.MAPPER::toDto).toList();
         if (body.isEmpty()) status = HttpStatus.NOT_FOUND;
 
         return new ResponseEntity<>(body, status);
@@ -218,8 +207,8 @@ public class UserService {
 
 
 
-    private User getUser(String userId){
-        Optional<User> optionalUser = userRepository.findById(userId);
+    private User getUser(Jws<Claims> payload){
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
         User user = null;
         if (optionalUser.isPresent()) {
             user = optionalUser.get();

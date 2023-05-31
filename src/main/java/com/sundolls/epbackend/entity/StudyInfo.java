@@ -21,7 +21,7 @@ public class StudyInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "INFO_NO")
+    @Column(name = "INFO_ID")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

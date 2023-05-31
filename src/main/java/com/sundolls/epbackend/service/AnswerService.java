@@ -9,6 +9,8 @@ import com.sundolls.epbackend.mapper.AnswerMapper;
 import com.sundolls.epbackend.repository.AnswerRepository;
 import com.sundolls.epbackend.repository.QuestionRepository;
 import com.sundolls.epbackend.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -25,10 +27,10 @@ public class AnswerService {
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
 
-    public ResponseEntity<AnswerResponse> postAnswer(Long questionId , String userId, AnswerRequest request) {
+    public ResponseEntity<AnswerResponse> postAnswer(Long questionId , Jws<Claims> payload, AnswerRequest request) {
         HttpStatus status = HttpStatus.OK;
 
-        Optional<User> optionalUser = userRepository.findById(userId);
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
         if (optionalUser.isEmpty()) {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
             return new ResponseEntity<>(status);
@@ -71,10 +73,10 @@ public class AnswerService {
 
     }
 
-    public ResponseEntity<AnswerResponse> updateAnswer(Long answerId, String userId, AnswerRequest request) {
+    public ResponseEntity<AnswerResponse> updateAnswer(Long answerId, Jws<Claims> payload, AnswerRequest request) {
         HttpStatus status = HttpStatus.OK;
 
-        Optional<User> optionalUser = userRepository.findById(userId);
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
         if (optionalUser.isEmpty()) {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
             return new ResponseEntity<>(status);
@@ -107,10 +109,10 @@ public class AnswerService {
 
     }
 
-    public ResponseEntity<AnswerResponse> deleteAnswer(Long answerId, String userId) {
+    public ResponseEntity<AnswerResponse> deleteAnswer(Long answerId, Jws<Claims> payload) {
         HttpStatus status = HttpStatus.OK;
 
-        Optional<User> optionalUser = userRepository.findById(userId);
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
         if (optionalUser.isEmpty()) {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
             return new ResponseEntity<>(status);

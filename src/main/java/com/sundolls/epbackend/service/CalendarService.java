@@ -7,6 +7,8 @@ import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.repository.CalendarRepository;
 import com.sundolls.epbackend.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,8 +30,8 @@ public class CalendarService {
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
 
-    public ArrayList<CalendarResponse> getCalendarList(String accessToken, LocalDateTime from, LocalDateTime to){
-        Optional<User> optionalUser = userRepository.findById(jwtProvider.getUsername(accessToken));
+    public ArrayList<CalendarResponse> getCalendarList(Jws<Claims> payload, LocalDateTime from, LocalDateTime to){
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
         if (optionalUser.isEmpty()) {
             return null;
         }
@@ -46,8 +48,8 @@ public class CalendarService {
         return calendarResponseArrayList;
     }
 
-    public CalendarResponse writeCalendar(String accessToken, CalendarRequest request){
-        Optional<User> optionalUser = userRepository.findById(jwtProvider.getUsername(accessToken));
+    public CalendarResponse writeCalendar(Jws<Claims> payload, CalendarRequest request){
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
         if (optionalUser.isEmpty()) {
             return null;
         }
@@ -66,8 +68,8 @@ public class CalendarService {
     }
 
     @Transactional
-    public CalendarResponse updateCalendar(String accessToken, CalendarRequest request){
-        Optional<User> optionalUser = userRepository.findById(jwtProvider.getUsername(accessToken));
+    public CalendarResponse updateCalendar(Jws<Claims> payload, CalendarRequest request){
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
         if (optionalUser.isEmpty()) {
             return null;
         }

@@ -6,12 +6,14 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sundolls.epbackend.entity.QQuestion;
 import com.sundolls.epbackend.entity.Question;
 import com.sundolls.epbackend.repository.QuestionRepositoryCustom;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,9 +21,11 @@ import static com.sundolls.epbackend.entity.QQuestion.question;
 
 @Repository
 public class QuestionRepositoryImpl extends QuerydslRepositorySupport implements QuestionRepositoryCustom {
+
+
     private final JPAQueryFactory queryFactory;
 
-    private QuestionRepositoryImpl (JPAQueryFactory queryFactory) {
+    public QuestionRepositoryImpl (JPAQueryFactory queryFactory) {
         super(QQuestion.class);
         this.queryFactory = queryFactory;
     }

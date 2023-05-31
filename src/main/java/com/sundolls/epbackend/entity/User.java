@@ -22,12 +22,14 @@ public class User extends BaseTimeEntity {
     @Column(name = "USERNAME")
     private String username;
 
+    @Column(name = "TAG")
+    private String tag;
+
     @Column(name = "PASSWORD")
     private String password;
 
     @Column(name = "EMAIL")
     private String email;
-
 
     @Column(name="SCHOOL_NAME")
     private String schoolName;

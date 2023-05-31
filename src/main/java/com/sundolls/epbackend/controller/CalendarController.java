@@ -3,6 +3,7 @@ package com.sundolls.epbackend.controller;
 import com.sundolls.epbackend.dto.request.CalendarRequest;
 import com.sundolls.epbackend.dto.response.CalendarResponse;
 import com.sundolls.epbackend.entity.Calendar;
+import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.service.CalendarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CalendarController {
     private final CalendarService calendarService;
+    private final JwtProvider jwtProvider;
 
     @GetMapping("")
     public ResponseEntity<ArrayList<CalendarResponse>> getCalendar(
@@ -30,7 +32,7 @@ public class CalendarController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
 
 
-        ArrayList<CalendarResponse> body = calendarService.getCalendarList(accessToken, LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
+        ArrayList<CalendarResponse> body = calendarService.getCalendarList(jwtProvider.getPayload(accessToken), LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
 
         if (body != null) {
             httpStatus = HttpStatus.OK;
@@ -47,7 +49,7 @@ public class CalendarController {
             @RequestBody CalendarRequest request) {
         HttpStatus httpStatus = null;
 
-        CalendarResponse body = calendarService.writeCalendar(accessToken, request);
+        CalendarResponse body = calendarService.writeCalendar(jwtProvider.getPayload(accessToken), request);
 
         if (body!=null) {
             httpStatus = HttpStatus.OK;
@@ -64,7 +66,7 @@ public class CalendarController {
             @RequestBody CalendarRequest request){
         HttpStatus httpStatus = null;
 
-        CalendarResponse body = calendarService.updateCalendar(accessToken, request);
+        CalendarResponse body = calendarService.updateCalendar(jwtProvider.getPayload(accessToken), request);
 
         if (body!=null) {
             httpStatus = HttpStatus.OK;

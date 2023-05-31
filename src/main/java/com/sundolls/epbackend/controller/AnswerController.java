@@ -24,7 +24,7 @@ public class AnswerController {
             @RequestBody AnswerRequest request,
             @PathVariable(name = "questionId") Long questionId
             ){
-        return answerService.postAnswer(questionId, jwtProvider.getUsername(accessToken), request);
+        return answerService.postAnswer(questionId, jwtProvider.getPayload(accessToken), request);
     }
 
     @GetMapping("/{questionId}")
@@ -41,7 +41,7 @@ public class AnswerController {
             @RequestBody AnswerRequest request,
             @PathVariable(name = "answerId") Long answerId
     ) {
-        return answerService.updateAnswer(answerId, jwtProvider.getUsername(accessToken), request);
+        return answerService.updateAnswer(answerId, jwtProvider.getPayload(accessToken), request);
     }
 
     @DeleteMapping("/{answerId}")
@@ -49,6 +49,6 @@ public class AnswerController {
             @RequestHeader("Authorization") String accessToken,
             @PathVariable(name = "answerId") Long answerId
     ) {
-        return answerService.deleteAnswer(answerId, jwtProvider.getUsername(accessToken));
+        return answerService.deleteAnswer(answerId, jwtProvider.getPayload(accessToken));
     }
 }

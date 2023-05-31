@@ -44,7 +44,7 @@ public class QuestionController {
             @RequestHeader(name = "Authorization") String accessToken,
             @RequestBody QuestionRequest request
             ) {
-        QuestionResponse body = questionService.writeQuestion(jwtProvider.getUsername(accessToken), request);
+        QuestionResponse body = questionService.writeQuestion(jwtProvider.getPayload(accessToken), request);
         HttpStatus status = null;
         if (body != null) {
             status = HttpStatus.OK;
@@ -61,7 +61,7 @@ public class QuestionController {
             @PathVariable Long questionId,
             @RequestBody QuestionRequest request
     ){
-        return questionService.updateQuestion(questionId, jwtProvider.getUsername(accessToken), request);
+        return questionService.updateQuestion(questionId, jwtProvider.getPayload(accessToken), request);
     }
 
 }

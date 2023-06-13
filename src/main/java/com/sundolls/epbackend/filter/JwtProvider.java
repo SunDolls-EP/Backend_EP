@@ -71,7 +71,7 @@ public class JwtProvider {
 
 
     public UsernamePasswordAuthenticationToken getAuthentication(String jwtToken) {
-        PrincipalDetails principalDetails = principalDetailsService.loadUserByUsername(((String) getPayload(jwtToken).getBody().get("username")+","+(String) getPayload(jwtToken).getBody().get("tag")));
+        PrincipalDetails principalDetails = principalDetailsService.loadUserByUsername(getPayload(jwtToken));
         return new UsernamePasswordAuthenticationToken(principalDetails, principalDetails.getPassword(), principalDetails.getAuthorities());
     }
 

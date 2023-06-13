@@ -15,5 +15,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     public Optional<User> findByUsernameAndTag(String username, String tag);
 
+    List<User> findAllByUsernameOrderByTagAsc(String username);
+
 
 }

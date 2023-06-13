@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @ToString
 public class UserResponse {
     private String username;
+    private String tag;
     private String schoolName;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class QuestionResponse {
     private Long id;
     private String writerUsername;
+    private String writerTag;
     private String title;
     private String content;
     private LocalDateTime createdAt;

@@ -3,6 +3,7 @@ package com.sundolls.epbackend.entity;
 import com.sundolls.epbackend.entity.baseEntity.BaseTimeEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.checkerframework.checker.units.qual.C;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
 public class StudyInfo {
 
     @Id

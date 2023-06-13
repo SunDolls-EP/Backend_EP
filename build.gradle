@@ -25,9 +25,6 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
     implementation 'mysql:mysql-connector-java'
 
     implementation group: 'io.springfox', name: 'springfox-boot-starter', version: '3.0.0'
@@ -35,7 +32,14 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation:3.0.4'
 
     implementation 'com.google.apis:google-api-services-oauth2:v2-rev20200213-2.0.0'
-    implementation 'org.mapstruct:mapstruct:1.5.3.Final'
+
+    implementation group: 'org.mapstruct', name: 'mapstruct', version: '1.5.3.Final'
+    implementation group: 'org.mapstruct', name: 'mapstruct-processor', version: '1.5.3.Final'
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.24'
+
+
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.24'
+    annotationProcessor group: 'org.mapstruct', name: 'mapstruct-processor', version: '1.5.3.Final'
 
 
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'

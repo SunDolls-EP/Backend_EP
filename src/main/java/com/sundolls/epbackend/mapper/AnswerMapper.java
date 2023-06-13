@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
+@Mapper
 public interface AnswerMapper extends EntityMapper<AnswerResponse, Answer>{
     AnswerMapper MAPPER = Mappers.getMapper(AnswerMapper.class);
 

@@ -34,106 +34,58 @@ public class UserController {
     @GetMapping("/token")
     public ResponseEntity<UserResponse> login(
             @RequestHeader(value = "Authorization")String idTokenString ) throws GeneralSecurityException, IOException {
-
-        User user = userService.join(idTokenString);
-        HttpStatus httpStatus = null;
-        UserResponse body = new UserResponse();
-        HttpHeaders headers = new HttpHeaders();
-        if(user!=null) {
-            httpStatus=HttpStatus.OK;
-            setUserResponseBody(body, user);
-            headers.add("Authorization", jwtProvider.generateToken(user.getUsername(), user.getTag()));
-
-        } else{
-            httpStatus=HttpStatus.BAD_REQUEST;
-        }
-
-        return new ResponseEntity<>(body, headers, httpStatus);
+        return userService.join(idTokenString);
     }
 
-    @PatchMapping("/user")
+    @PutMapping("/user")
     public ResponseEntity<UserResponse> updateUserInfo(
             @RequestHeader(value = "Authorization")String accessTokenString,
             @RequestBody UserPatchRequest request){
-        User user = userService.updateUser(request, jwtProvider.getPayload(accessTokenString));
-        HttpStatus httpStatus = null;
-        UserResponse body = new UserResponse();
-        if (user!=null){
-            httpStatus = HttpStatus.OK;
-            setUserResponseBody(body, user);
-        } else {
-            httpStatus=HttpStatus.BAD_REQUEST;
-        }
-        return new ResponseEntity<>(body,httpStatus);
+        return userService.updateUser(request, jwtProvider.getPayload(accessTokenString));
     }
 
     @GetMapping("/user/{username}")
     public ResponseEntity<UserResponse> findUser(@PathVariable String username){
-        User user = userService.findUser(username);
-        HttpStatus httpStatus = null;
-        UserResponse body = new UserResponse();
-        if(user!=null){
-            httpStatus = HttpStatus.OK;
-            setUserResponseBody(body, user);
-        } else {
-            httpStatus = HttpStatus.NOT_FOUND;
-        }
-        return new ResponseEntity<>(body, httpStatus);
+        return userService.findUser(username);
    }
 
-   @PostMapping("/user/friend/{username}")
+    @GetMapping("/user/{username}/{tag}")
+    public ResponseEntity<UserResponse> findUser(
+            @PathVariable String username,
+            @PathVariable String tag
+            ){
+        return userService.findUser(username, tag);
+    }
+
+   @PostMapping("/user/friend/{username}/{tag}")
    public ResponseEntity<UserResponse> requestFriend(
            @RequestHeader(value = "Authorization")String accessTokenString,
-           @PathVariable String username) {
-        UserResponse body = userService.requestFriend(username, jwtProvider.getPayload(accessTokenString));
-        HttpStatus httpStatus = null;
-        if (body != null){
-            httpStatus = HttpStatus.OK;
-        } else {
-            httpStatus = HttpStatus.NOT_FOUND;
-        }
-        return new ResponseEntity<>(body, httpStatus);
+           @PathVariable String username,
+           @PathVariable String tag) {
+        return userService.requestFriend(username, tag, jwtProvider.getPayload(accessTokenString));
    }
 
    @GetMapping("/user/friend")
    public ResponseEntity<List<FriendResponse>> getFriends(
            @RequestHeader(value = "Authorization")String accessTokenString) {
-        ArrayList<FriendResponse> body = userService.getFriendList(jwtProvider.getPayload(accessTokenString));
-        HttpStatus httpStatus = null;
-        if (body != null){
-            httpStatus = HttpStatus.OK;
-        } else {
-            httpStatus = HttpStatus.UNAUTHORIZED;
-        }
-        return new ResponseEntity<>(body, httpStatus);
+        log.info("here");
+        return userService.getFriendList(jwtProvider.getPayload(accessTokenString));
    }
 
-   @DeleteMapping("/user/friend/{username}")
+   @DeleteMapping("/user/friend/{username}/{tag}")
    public ResponseEntity<FriendResponse> deleteFriend(
            @RequestHeader(value = "Authorization")String accessTokenString,
-           @PathVariable String username ) {
-        FriendResponse body = userService.deleteFriend(username, jwtProvider.getPayload(accessTokenString));
-        HttpStatus httpStatus = null;
-        if (body != null) {
-            httpStatus = HttpStatus.OK;
-        } else {
-            httpStatus = HttpStatus.NOT_FOUND;
-        }
-        return new ResponseEntity<>(body, httpStatus);
+           @PathVariable String username,
+           @PathVariable String tag) {
+        return userService.deleteFriend(username, tag, jwtProvider.getPayload(accessTokenString));
    }
 
-   @PatchMapping("/user/friend/{username}")
+   @PatchMapping("/user/friend/{username}/{tag}")
    public ResponseEntity<FriendResponse> acceptFriend(
            @RequestHeader(value = "Authorization")String accessTokenString,
-           @PathVariable String username) {
-        FriendResponse body = userService.acceptFriend(username, jwtProvider.getPayload(accessTokenString));
-       HttpStatus httpStatus = null;
-       if (body != null) {
-           httpStatus = HttpStatus.OK;
-       } else {
-           httpStatus = HttpStatus.NOT_FOUND;
-       }
-       return new ResponseEntity<>(body, httpStatus);
+           @PathVariable String username,
+           @PathVariable String tag) {
+        return userService.acceptFriend(username, tag,jwtProvider.getPayload(accessTokenString));
    }
 
    @PostMapping("/user/study")

@@ -252,10 +252,15 @@ public class UserService {
             return new ResponseEntity<>(status);
         }
 
+        if ( Duration.between(request.getStartAt(), request.getEndAt()).getSeconds() > 86399 || Duration.between(request.getStartAt(), request.getEndAt()).getSeconds() < 1) {
+            status = HttpStatus.BAD_REQUEST;
+            return new ResponseEntity<>(status);
+        }
+
         StudyInfo studyInfo = StudyInfo.builder()
                 .user(user)
                 .createdAt(request.getStartAt())
-                .time(Duration.between(request.getEndAt(), request.getStartAt()).getSeconds())
+                .time(Math.abs(Duration.between(request.getEndAt(), request.getStartAt()).getSeconds()))
                 .build();
         studyInfoRepository.save(studyInfo);
 
@@ -276,7 +281,11 @@ public class UserService {
 
 
     private User getUser(Jws<Claims> payload){
-        return userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag")).get();
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
+        if (optionalUser.isEmpty()) {
+            return null;
+        }
+        return optionalUser.get();
     }
 
     private User getTarget(String username){

@@ -9,6 +9,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.sql.Time;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Mapper
 public interface StudyInfoMapper extends EntityMapper<StudyInfoResponse, StudyInfo> {
@@ -18,7 +19,7 @@ public interface StudyInfoMapper extends EntityMapper<StudyInfoResponse, StudyIn
     @Override
     @Mapping(
             source = "time", target = "totalTime",
-            qualifiedByName = "toTime"
+            qualifiedByName = "toTimeString"
     )
     @Mapping(
             source = "createdAt", target = "startAt"
@@ -28,9 +29,13 @@ public interface StudyInfoMapper extends EntityMapper<StudyInfoResponse, StudyIn
     )
     StudyInfoResponse toDto(final StudyInfo entity);
 
-    @Named("toTime")
-    default Time toTime(long second) {
-        return new Time(second * 1000);
+    @Named("toTimeString")
+    default Time toTimeString(long seconds) {
+        int S = (int) (seconds % 60);
+        int H = (int) (seconds / 60);
+        int M = H % 60;
+        H = H / 60;
+        return Time.valueOf(LocalTime.of(H,M,S));
     }
 
     @Named("getEndAt")

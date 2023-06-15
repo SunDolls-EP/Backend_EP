@@ -27,6 +27,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -100,6 +101,7 @@ public class UserService {
     }
 
 
+    @Transactional
     public ResponseEntity<UserResponse> updateUser(UserPatchRequest request, Jws<Claims> payload){
         HttpStatus status = HttpStatus.OK;
 
@@ -107,7 +109,6 @@ public class UserService {
 
         user.update(request.getUsername(),request.getSchoolName(), makeTag(request.getUsername()));
 
-        userRepository.save(user);
         UserResponse body = UserMapper.MAPPER.toDto(user);
         if (request.getUsername() != null) {
             HttpHeaders headers = new HttpHeaders();
@@ -247,10 +248,6 @@ public class UserService {
         HttpStatus status = HttpStatus.OK;
 
         User user = getUser(payload);
-        if (user==null) {
-            status = HttpStatus.UNAUTHORIZED;
-            return new ResponseEntity<>(status);
-        }
 
         if ( Duration.between(request.getStartAt(), request.getEndAt()).getSeconds() > 86399 || Duration.between(request.getStartAt(), request.getEndAt()).getSeconds() < 1) {
             status = HttpStatus.BAD_REQUEST;
@@ -267,10 +264,12 @@ public class UserService {
         return new ResponseEntity<>(status);
     }
 
-    public ResponseEntity<List<StudyInfoResponse>> getStudyInfos(LocalDateTime from, LocalDateTime to) {
+    public ResponseEntity<List<StudyInfoResponse>> getStudyInfos(Jws<Claims> payload, LocalDateTime from, LocalDateTime to) {
         HttpStatus status = HttpStatus.OK;
 
-        List<StudyInfo> studyInfos =  studyInfoRepository.findByCreatedAtBetween(from, to);
+        User user = getUser(payload);
+
+        List<StudyInfo> studyInfos =  studyInfoRepository.findByUserAndCreatedAtBetween(user, from, to);
         List<StudyInfoResponse> body = studyInfos.stream().map(StudyInfoMapper.MAPPER::toDto).toList();
         if (body.isEmpty()) status = HttpStatus.NOT_FOUND;
 

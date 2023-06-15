@@ -102,15 +102,8 @@ public class UserController {
            @RequestParam(defaultValue = "2000-01-01 00") String from,
            @RequestParam(defaultValue = "3000-12-31 23") String to) {
        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
-       return userService.getStudyInfos(LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
+       return userService.getStudyInfos(jwtProvider.getPayload(accessTokenString), LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
    }
 
-
-   private void setUserResponseBody(UserResponse body, User user){
-       body.setUsername(user.getUsername());
-       body.setSchoolName(user.getSchoolName());
-       body.setCreatedAt(user.getCreatedAt());
-       body.setModifiedAt(user.getModifiedAt());
-   }
 
 }

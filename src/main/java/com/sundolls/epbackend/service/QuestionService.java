@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -25,10 +26,10 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
 
-    public QuestionResponse writeQuestion(Jws<Claims> payload, QuestionRequest request) {
-        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
-        if(optionalUser.isEmpty()) return null;
-        User writer = optionalUser.get();
+    public ResponseEntity<QuestionResponse> writeQuestion(Jws<Claims> payload, QuestionRequest request) {
+        HttpStatus status = HttpStatus.OK;
+
+        User writer = getUser(payload);
 
         Question question = Question.builder()
                 .user(writer)
@@ -37,18 +38,45 @@ public class QuestionService {
                 .build();
         questionRepository.save(question);
 
-        return QuestionMapper.MAPPER.toDto(question);
+        QuestionResponse body = QuestionMapper.MAPPER.toDto(question);
+
+        return new ResponseEntity<>(body, status);
     }
 
-    public Page<QuestionResponse> getQuestions(Pageable pageable, String username, String title, String content, LocalDateTime from, LocalDateTime to) {
-        Page<Question> questions = questionRepository.searchQuestions(pageable, username, title, content, from, to);
-        return questions.map(QuestionMapper.MAPPER::toDto);
+    public ResponseEntity<Page<QuestionResponse>> getQuestions(Pageable pageable, String username, String tag, String title, String content, LocalDateTime from, LocalDateTime to) {
+        HttpStatus status = HttpStatus.OK;
+
+        Page<Question> questions = questionRepository.searchQuestions(pageable, username, tag, title, content, from, to);
+        Page<QuestionResponse> body = questions.map(QuestionMapper.MAPPER::toDto);
+
+        return new ResponseEntity<>(body, status);
     }
 
+    public ResponseEntity<QuestionResponse> deleteQuestion(Long questionId, Jws<Claims> payload) {
+        HttpStatus status = HttpStatus.OK;
+
+        User user = getUser(payload);
+
+        Optional<Question> optionalQuestion = questionRepository.findById(questionId);
+        if (optionalQuestion.isEmpty()) {
+            status = HttpStatus.NOT_FOUND;
+            return new ResponseEntity<>(status);
+        }
+        Question question = optionalQuestion.get();
+        if (!user.equals(question.getUser())) {
+            status = HttpStatus.FORBIDDEN;
+            return new ResponseEntity<>(status);
+        }
+
+        questionRepository.deleteById(questionId);
+
+        return new ResponseEntity<>(QuestionMapper.MAPPER.toDto(question), status);
+    }
+    @Transactional
     public ResponseEntity<QuestionResponse> updateQuestion(Long questionId, Jws<Claims> payload, QuestionRequest request) {
         HttpStatus status = HttpStatus.OK;
 
-        User user = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag")).get();
+        User user = getUser(payload);
 
         Optional<Question> optionalQuestion = questionRepository.findById(questionId);
         if (optionalQuestion.isEmpty()) {
@@ -62,9 +90,16 @@ public class QuestionService {
         }
 
         question.update(request.getTitle(), request.getContent());
-        questionRepository.save(question);
 
         return new ResponseEntity<>(QuestionMapper.MAPPER.toDto(question), status);
+    }
+
+    private User getUser(Jws<Claims> payload){
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
+        if (optionalUser.isEmpty()) {
+            return null;
+        }
+        return optionalUser.get();
     }
 
 

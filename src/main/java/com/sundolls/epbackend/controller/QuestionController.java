@@ -29,14 +29,14 @@ public class QuestionController {
             Pageable pageable,
             @RequestParam(name = "title-keyword", required = false) String title,
             @RequestParam(name = "content-keyword", required = false) String content,
-            @RequestParam(name = "writer", required = false) String writerUsername,
+            @RequestParam(name = "writer-name", required = false) String writerUsername,
+            @RequestParam(name = "writer-tag", required = false) String writerTag,
             @RequestParam(name = "from", defaultValue = "2000-01-01 00")String from,
             @RequestParam(name = "to", defaultValue = "3000-12-31 23")String to
             ) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
-        Page<QuestionResponse> body = questionService.getQuestions(pageable, writerUsername, title, content, LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
-        HttpStatus status = HttpStatus.OK;
-        return new ResponseEntity<>(body, status);
+        return questionService.getQuestions(pageable, writerUsername, writerTag, title, content, LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
+
     }
 
     @PostMapping("")
@@ -44,15 +44,7 @@ public class QuestionController {
             @RequestHeader(name = "Authorization") String accessToken,
             @RequestBody QuestionRequest request
             ) {
-        QuestionResponse body = questionService.writeQuestion(jwtProvider.getPayload(accessToken), request);
-        HttpStatus status = null;
-        if (body != null) {
-            status = HttpStatus.OK;
-        } else {
-            status = HttpStatus.UNAUTHORIZED;
-        }
-
-        return new ResponseEntity<>(body, status);
+        return questionService.writeQuestion(jwtProvider.getPayload(accessToken), request);
     }
 
     @PutMapping("/{questionId}")
@@ -62,6 +54,14 @@ public class QuestionController {
             @RequestBody QuestionRequest request
     ){
         return questionService.updateQuestion(questionId, jwtProvider.getPayload(accessToken), request);
+    }
+
+    @DeleteMapping("/{questionId}")
+    public ResponseEntity<QuestionResponse> deleteQuestion(
+            @RequestHeader(name = "Authorization") String accessToken,
+            @PathVariable Long questionId
+    ){
+        return questionService.deleteQuestion(questionId, jwtProvider.getPayload(accessToken));
     }
 
 }

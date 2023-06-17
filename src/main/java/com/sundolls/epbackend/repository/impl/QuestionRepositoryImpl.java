@@ -1,4 +1,5 @@
 package com.sundolls.epbackend.repository.impl;
+
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -6,14 +7,11 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sundolls.epbackend.entity.QQuestion;
 import com.sundolls.epbackend.entity.Question;
 import com.sundolls.epbackend.repository.QuestionRepositoryCustom;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
-
-import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -32,10 +30,10 @@ public class QuestionRepositoryImpl extends QuerydslRepositorySupport implements
 
 
     @Override
-    public Page<Question> searchQuestions(Pageable pageable, String username, String title, String content, LocalDateTime from, LocalDateTime to) {
+    public Page<Question> searchQuestions(Pageable pageable, String username, String tag, String title, String content, LocalDateTime from, LocalDateTime to) {
 
-        JPAQuery<Question> query = queryFactory.select(Projections.bean(Question.class, question.id, question.title)).from(question)
-                .where(eqUsername(username), containsTitle(title), containsContent(content), betweenCreatedAt(from, to));
+        JPAQuery<Question> query = queryFactory.selectFrom(question)
+                .where(eqUsername(username), eqTag(tag), containsTitle(title), containsContent(content), betweenCreatedAt(from, to));
         int totalCount = query.fetch().size();
         List<Question> questions = getQuerydsl().applyPagination(pageable, query).fetch();
 
@@ -48,6 +46,13 @@ public class QuestionRepositoryImpl extends QuerydslRepositorySupport implements
             return null;
         }
         return question.user.username.eq(username);
+    }
+
+    private BooleanExpression eqTag(String tag) {
+        if (tag == null || tag.isEmpty()) {
+            return null;
+        }
+        return question.user.tag.eq(tag);
     }
 
     private BooleanExpression containsTitle(String title) {

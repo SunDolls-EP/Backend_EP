@@ -5,6 +5,7 @@ import com.sundolls.epbackend.dto.response.AnswerResponse;
 import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.service.AnswerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class AnswerController {
     }
 
     @GetMapping("/{questionId}")
-    public ResponseEntity<List<AnswerResponse>> getAnswers(
+    public ResponseEntity<Page<AnswerResponse>> getAnswers(
             @PathVariable(name = "questionId") Long questionId,
             Pageable pageable
     ) {

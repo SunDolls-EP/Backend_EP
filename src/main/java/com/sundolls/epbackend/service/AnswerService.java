@@ -12,6 +12,7 @@ import com.sundolls.epbackend.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,7 +56,7 @@ public class AnswerService {
 
     }
 
-    public ResponseEntity<List<AnswerResponse>> getAnswers(Long questionId, Pageable pageable){
+    public ResponseEntity<Page<AnswerResponse>> getAnswers(Long questionId, Pageable pageable){
         HttpStatus status = HttpStatus.OK;
 
         Optional<Question> optionalQuestion = questionRepository.findById(questionId);
@@ -65,9 +66,9 @@ public class AnswerService {
         }
         Question question = optionalQuestion.get();
 
-        List<Answer> answers = answerRepository.findByQuestion(question, pageable);
+        Page<Answer> answers = answerRepository.findByQuestion(question, pageable);
 
-        List<AnswerResponse> body = answers.stream().map(AnswerMapper.MAPPER::toDto).toList();
+        Page<AnswerResponse> body = answers.map(AnswerMapper.MAPPER::toDto);
 
         return new ResponseEntity<>(body, status);
 

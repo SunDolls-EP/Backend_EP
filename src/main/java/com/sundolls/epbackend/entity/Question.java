@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "question_tb")
@@ -29,6 +30,15 @@ public class Question extends BaseTimeEntity {
 
     @Column(name = "CONTENT")
     private String content;
+
+    public Question(Long id, User user, String title, String content, LocalDateTime createdAt, LocalDateTime modifiedAt) {
+        this.id = id;
+        this.user = user;
+        this.title = title;
+        this.content = content;
+        setCreatedAt(createdAt);
+        setModifiedAt(modifiedAt);
+    }
 
     public void update(String title, String content) {
         if(title!=null){

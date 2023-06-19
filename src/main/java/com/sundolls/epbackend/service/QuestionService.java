@@ -1,5 +1,6 @@
 package com.sundolls.epbackend.service;
 
+import com.querydsl.core.Tuple;
 import com.sundolls.epbackend.dto.request.QuestionRequest;
 import com.sundolls.epbackend.dto.response.QuestionResponse;
 import com.sundolls.epbackend.entity.Question;
@@ -48,6 +49,21 @@ public class QuestionService {
 
         Page<Question> questions = questionRepository.searchQuestions(pageable, username, tag, title, content, from, to);
         Page<QuestionResponse> body = questions.map(QuestionMapper.MAPPER::toDto);
+
+        return new ResponseEntity<>(body, status);
+    }
+
+    public ResponseEntity<QuestionResponse> getQuestion(Long questionId) {
+        HttpStatus status = HttpStatus.OK;
+
+        Optional<Question> optionalQuestion = questionRepository.findById(questionId);
+        if (optionalQuestion.isEmpty()) {
+            status = HttpStatus.NOT_FOUND;
+            return new ResponseEntity<>(status);
+        }
+        Question question = optionalQuestion.get();
+
+        QuestionResponse body = QuestionMapper.MAPPER.toDto(question);
 
         return new ResponseEntity<>(body, status);
     }

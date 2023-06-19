@@ -1,6 +1,9 @@
 package com.sundolls.epbackend.entity;
 
 import com.sundolls.epbackend.entity.baseEntity.BaseTimeEntity;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.checkerframework.checker.units.qual.C;
 import org.springframework.data.annotation.CreatedDate;
@@ -13,11 +16,14 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "study_info_tb")
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
 public class StudyInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "INFO_NO")
+    @Column(name = "INFO_ID")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,7 +31,7 @@ public class StudyInfo {
     private User user;
 
     @Column(name = "TOTAL_STUDY_TIME")
-    private Time time;
+    private Long time;
 
     @Column(name = "CREATED_AT")
     @CreatedDate

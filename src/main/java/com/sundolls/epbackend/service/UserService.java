@@ -1,24 +1,43 @@
 package com.sundolls.epbackend.service;
 
+import ch.qos.logback.core.joran.conditional.ThenAction;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.sundolls.epbackend.dto.request.StudyInfoRequest;
 import com.sundolls.epbackend.dto.request.UserPatchRequest;
 import com.sundolls.epbackend.dto.response.FriendResponse;
+import com.sundolls.epbackend.dto.response.StudyInfoResponse;
 import com.sundolls.epbackend.dto.response.UserResponse;
 import com.sundolls.epbackend.entity.Friend;
+import com.sundolls.epbackend.entity.StudyInfo;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.entity.primaryKey.FriendId;
 import com.sundolls.epbackend.filter.JwtProvider;
+import com.sundolls.epbackend.mapper.FriendMapper;
+import com.sundolls.epbackend.mapper.StudyInfoMapper;
+import com.sundolls.epbackend.mapper.UserMapper;
 import com.sundolls.epbackend.repository.FriendRepository;
+import com.sundolls.epbackend.repository.StudyInfoRepository;
 import com.sundolls.epbackend.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.sql.Time;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 @Slf4j
@@ -27,67 +46,114 @@ public class UserService {
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
-
-    public User join(String  idTokenString) throws GeneralSecurityException, IOException {
+    private final StudyInfoRepository studyInfoRepository;
+    private final JwtProvider jwtProvider;
+    private final FriendMapper friendMapper;
+    public ResponseEntity<UserResponse> join(String  idTokenString) throws GeneralSecurityException, IOException {
         GoogleIdToken idToken = googleIdTokenVerifier.verify(idTokenString);
+        HttpStatus status = HttpStatus.OK;
+
         if(idToken!=null) {
             GoogleIdToken.Payload payload = idToken.getPayload();
             String id = payload.getSubject();
             String username = (String) payload.get("name");
             String email = payload.getEmail();
 
-            User user = null;
             Optional<User> optionalUser = userRepository.findByEmail(email);
+            User user = null;
             if (optionalUser.isEmpty()) {
                 user = User.builder()
-                        .id(id)
+                        .id("google_" + id)
                         .username(username)
+                        .tag(makeTag(username))
                         .password(null)
                         .email(email)
                         .build();
                 userRepository.save(user);
-            }
-            else{
+            } else {
                 user = optionalUser.get();
             }
-            return user;
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization",jwtProvider.generateToken(user.getUsername(), user.getTag()));
+            UserResponse body = UserMapper.MAPPER.toDto(user);
+
+            return new ResponseEntity<>(body, headers, status);
         }
-        return null;
+        status = HttpStatus.UNAUTHORIZED;
+        return new ResponseEntity<>(status);
     }
 
+    private String makeTag(String username) {
+        List<User> users = userRepository.findAllByUsernameOrderByTagAsc(username);
+        Random random = new Random();
+        String tag = null;
 
-    public User updateUser(UserPatchRequest request, String userId){
-        Optional<User> optionalUser = userRepository.findById(userId);
-        if (optionalUser.isEmpty()) {
-            return null;
+        Verifier: while(true) {
+            tag = String.format("%04d", random.nextInt(10000));
+            for (User user : users) {
+                if (user.getTag().equals(tag)) {
+                    continue Verifier;
+                }
+            }
+            break;
         }
-        User user = optionalUser.get();
-        user.update(request.getUsername(),request.getSchoolName());
-
-        userRepository.save(user);
-        return user;
+        return tag;
     }
 
-    public User findUser(String username){
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        if(optionalUser.isEmpty()) return null;
-        return optionalUser.get();
+
+    @Transactional
+    public ResponseEntity<UserResponse> updateUser(UserPatchRequest request, Jws<Claims> payload){
+        HttpStatus status = HttpStatus.OK;
+
+        User user = getUser(payload);
+
+        user.update(request.getUsername(),request.getSchoolName(), makeTag(request.getUsername()));
+
+        UserResponse body = UserMapper.MAPPER.toDto(user);
+        if (request.getUsername() != null) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization",jwtProvider.generateToken(user.getUsername(), user.getTag()));
+            return new ResponseEntity<>(body, headers ,status);
+        }
+
+        return new ResponseEntity<>(body, status);
     }
 
-    public UserResponse requestFriend(String username, String userId){
+    public ResponseEntity<UserResponse> findUser(String username){
+        HttpStatus status = HttpStatus.OK;
+
         Optional<User> optionalUser = userRepository.findByUsername(username);
         if(optionalUser.isEmpty()){
-            log.info("Target Not Found");
-            return null;
+            status = HttpStatus.NOT_FOUND;
+            return new ResponseEntity<>(status);
+        }
+        UserResponse body = UserMapper.MAPPER.toDto(optionalUser.get());
+        return new ResponseEntity<>(body, status);
+    }
+
+    public ResponseEntity<UserResponse> findUser(String username, String tag) {
+        HttpStatus status = HttpStatus.OK;
+
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag(username, tag);
+        if(optionalUser.isEmpty()){
+            status = HttpStatus.NOT_FOUND;
+            return new ResponseEntity<>(status);
+        }
+        UserResponse body = UserMapper.MAPPER.toDto(optionalUser.get());
+        return new ResponseEntity<>(body, status);
+    }
+
+    public ResponseEntity<UserResponse> requestFriend(String targetUsername,String targetTag ,Jws<Claims> payload){
+        HttpStatus httpStatus = HttpStatus.OK;
+
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag(targetUsername, targetTag);
+        if (optionalUser.isEmpty()) {
+            httpStatus = HttpStatus.NOT_FOUND;
+            return new ResponseEntity<>(httpStatus);
         }
         User targetUser = optionalUser.get();
 
-        optionalUser = userRepository.findById(userId);
-        if(optionalUser.isEmpty()){
-            log.info("Requester Not Found");
-            return null;
-        }
-        User requesterUser = optionalUser.get();
+        User requesterUser = getUser(payload);
 
         FriendId friendId = new FriendId();
         friendId.setUserId(requesterUser.getId());
@@ -101,87 +167,124 @@ public class UserService {
                 .build();
         friendRepository.save(friend);
 
-        UserResponse userResponse = new UserResponse();
-        userResponse.setUsername(targetUser.getUsername());
-        userResponse.setSchoolName(targetUser.getSchoolName());
-        userResponse.setCreatedAt(targetUser.getCreatedAt());
-        userResponse.setModifiedAt(targetUser.getModifiedAt());
+        UserResponse body = UserMapper.MAPPER.toDto(targetUser);
 
-        return userResponse;
+        return new ResponseEntity<>(body, httpStatus);
 
     }
 
-    public ArrayList<FriendResponse> getFriendList(String userId){
-        Optional<User> optionalUser = userRepository.findById(userId);
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-        User user = optionalUser.get();
+    public ResponseEntity<List<FriendResponse>> getFriendList(Jws<Claims> payload){
+        HttpStatus status = HttpStatus.OK;
 
-        ArrayList<Friend> friends = new ArrayList<>();
+        User user = getUser(payload);
+
+        List<Friend> friends = new ArrayList<>();
 
         friends.addAll(friendRepository.findAllByUser(user));
         friends.addAll(friendRepository.findAllByTargetUser(user));
 
-        ArrayList<FriendResponse> friendResponses = new ArrayList<>();
+        log.info(friends.toString());
 
-        for (Friend friend : friends){
-            FriendResponse element = makeResponse(user, friend);
-            friendResponses.add(element);
-        }
+        List<FriendResponse> body = friends.stream().map( friend -> friendMapper.toDto(friend, user)  ).toList();
 
-        return friendResponses;
+        return new ResponseEntity<>(body, status);
 
     }
 
-    public FriendResponse deleteFriend(String username, String userId){
-        User user = getUser(userId);
-        User targetUser = getTarget(username);
-        if(user==null || targetUser == null) return null;
+    public ResponseEntity<FriendResponse> deleteFriend(String username, String tag, Jws<Claims> payload){
+        HttpStatus status = HttpStatus.OK;
+
+        User user = getUser(payload);
+        User targetUser = userRepository.findByUsernameAndTag(username, tag).get();
 
         Optional<Friend> optionalFriend = friendRepository.findByUserAndTargetUser(user, targetUser);
         if (optionalFriend.isEmpty()){
             optionalFriend = friendRepository.findByUserAndTargetUser(targetUser, user);
         }
-        if (optionalFriend.isEmpty()) return null;
+        if (optionalFriend.isEmpty()){
+            status = HttpStatus.NOT_FOUND;
+            return new ResponseEntity<>(status);
+        }
         Friend friend = optionalFriend.get();
 
-        FriendResponse friendResponse = makeResponse(user, friend);
+        FriendResponse body = friendMapper.toDto(friend, user);
 
         friendRepository.delete(friend);
 
-        return friendResponse;
+        return new ResponseEntity<>(body, status);
 
     }
 
-    public FriendResponse acceptFriend(String username, String userId){
-        User user = getUser(userId);
-        User targetUser = getTarget(username);
-        if(user==null || targetUser == null) return null;
+    public ResponseEntity<FriendResponse> acceptFriend(String username, String tag, Jws<Claims> payload){
+        HttpStatus status = HttpStatus.OK;
+
+        User user = getUser(payload);
+        User targetUser = userRepository.findByUsernameAndTag(username, tag).get();
 
         Optional<Friend> optionalFriend = friendRepository.findByUserAndTargetUser(user, targetUser);
         if (optionalFriend.isEmpty()){
             optionalFriend = friendRepository.findByUserAndTargetUser(targetUser, user);
-        } else {
-            return makeResponse(user, optionalFriend.get());
         }
-        if (optionalFriend.isEmpty()) return null;
+        if (optionalFriend.isEmpty()){
+            status = HttpStatus.NOT_FOUND;
+            return new ResponseEntity<>(status);
+        }
         Friend friend = optionalFriend.get();
+
+        if (! friend.getTargetUser().equals(user)){
+            status = HttpStatus.FORBIDDEN;
+            return new ResponseEntity<>(status);
+        }
 
         friend.accept();
         friendRepository.save(friend);
 
-        return makeResponse(user, friend);
+        FriendResponse body = friendMapper.toDto(friend, user);
+
+        return new ResponseEntity<>(body, status);
+    }
+
+    public ResponseEntity<Void> postStudyInfo(Jws<Claims> payload, StudyInfoRequest request) {
+        HttpStatus status = HttpStatus.OK;
+
+        User user = getUser(payload);
+
+        if ( Duration.between(request.getStartAt(), request.getEndAt()).getSeconds() > 86399 || Duration.between(request.getStartAt(), request.getEndAt()).getSeconds() < 1) {
+            status = HttpStatus.BAD_REQUEST;
+            return new ResponseEntity<>(status);
+        }
+
+        StudyInfo studyInfo = StudyInfo.builder()
+                .user(user)
+                .createdAt(request.getStartAt())
+                .time(Math.abs(Duration.between(request.getEndAt(), request.getStartAt()).getSeconds()))
+                .build();
+        studyInfoRepository.save(studyInfo);
+
+        return new ResponseEntity<>(status);
+    }
+
+    public ResponseEntity<List<StudyInfoResponse>> getStudyInfos(Jws<Claims> payload, LocalDateTime from, LocalDateTime to) {
+        HttpStatus status = HttpStatus.OK;
+
+        User user = getUser(payload);
+
+        List<StudyInfo> studyInfos =  studyInfoRepository.findByUserAndCreatedAtBetween(user, from, to);
+        List<StudyInfoResponse> body = studyInfos.stream().map(StudyInfoMapper.MAPPER::toDto).toList();
+        if (body.isEmpty()) status = HttpStatus.NOT_FOUND;
+
+        return new ResponseEntity<>(body, status);
     }
 
 
-    private User getUser(String userId){
-        Optional<User> optionalUser = userRepository.findById(userId);
-        User user = null;
-        if (optionalUser.isPresent()) {
-            user = optionalUser.get();
+
+
+    private User getUser(Jws<Claims> payload){
+        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
+        if (optionalUser.isEmpty()) {
+            return null;
         }
-        return user;
+        return optionalUser.get();
     }
 
     private User getTarget(String username){

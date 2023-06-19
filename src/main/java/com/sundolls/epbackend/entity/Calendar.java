@@ -15,7 +15,7 @@ public class Calendar extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CALENDAR_NO")
+    @Column(name = "CALENDAR_ID")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

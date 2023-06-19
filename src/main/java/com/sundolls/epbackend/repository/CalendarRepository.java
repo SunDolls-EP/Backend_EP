@@ -13,6 +13,8 @@ import java.util.Optional;
 
 @Repository
 public interface CalendarRepository extends JpaRepository<Calendar, Long> {
+    boolean existsByUserAndCreatedAtBetween(User user, LocalDateTime createdAtStart, LocalDateTime createdAtEnd);
+
     ArrayList<Calendar> findByCreatedAtBetweenAndUser (LocalDateTime from, LocalDateTime to, User user);
 
     Optional<Calendar> findByUserAndCreatedAtBetween(User user, LocalDateTime startAt, LocalDateTime endAt);

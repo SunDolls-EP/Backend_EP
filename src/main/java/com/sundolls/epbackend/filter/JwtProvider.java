@@ -17,6 +17,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @PropertySource("/jwt.properties")
 @RequiredArgsConstructor
@@ -26,27 +28,29 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String secret;
 
-    private final long VALID_MILLISECOND = 1000L *60 * 10;
+    private final long VALID_MILLISECOND = 1000L *60 * 30;
 
     private Key getSecretKey(String secret){
         byte[] KeyBytes = secret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(KeyBytes);
     }
 
-    //Username: DB 테이블의 Id
-    public String getUsername(String jwtToken) {
+    //Username:
+    public Jws<Claims> getPayload(String jwtToken) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSecretKey(secret))
                 .build()
-                .parseClaimsJws(jwtToken)
-                .getBody()
-                .getSubject();
+                .parseClaimsJws(jwtToken);
     }
 
-    public String generateToken(String id){
+    public String generateToken(String username, String tag){
         Date date = new Date();
+        Map<String, String> payload = new HashMap<>();
+        payload.put("username",username);
+        payload.put("tag",tag);
+
         return Jwts.builder()
-                .setSubject(id)
+                .setClaims(payload)
                 .setIssuedAt(date)
                 .setExpiration(new Date(date.getTime()+VALID_MILLISECOND))
                 .signWith(getSecretKey(secret), SignatureAlgorithm.HS256)
@@ -67,7 +71,7 @@ public class JwtProvider {
 
 
     public UsernamePasswordAuthenticationToken getAuthentication(String jwtToken) {
-        PrincipalDetails principalDetails = principalDetailsService.loadUserByUsername(getUsername(jwtToken));
+        PrincipalDetails principalDetails = principalDetailsService.loadUserByUsername(getPayload(jwtToken));
         return new UsernamePasswordAuthenticationToken(principalDetails, principalDetails.getPassword(), principalDetails.getAuthorities());
     }
 

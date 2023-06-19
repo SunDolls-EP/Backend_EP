@@ -12,10 +12,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @PropertySource(value = { "classpath:jwt.properties"})
 class EpBackendApplicationTests {
 
-    @Autowired
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    private MockMvc mvc;
-
     @Test
     void contextLoads() {
 

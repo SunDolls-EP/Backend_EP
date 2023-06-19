@@ -3,17 +3,20 @@ package com.sundolls.epbackend.controller;
 import com.sundolls.epbackend.dto.request.CalendarRequest;
 import com.sundolls.epbackend.dto.response.CalendarResponse;
 import com.sundolls.epbackend.entity.Calendar;
+import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.service.CalendarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,23 +24,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CalendarController {
     private final CalendarService calendarService;
+    private final JwtProvider jwtProvider;
 
     @GetMapping("")
-    public ResponseEntity<ArrayList<CalendarResponse>> getCalendar(
+    public ResponseEntity<List<CalendarResponse>> getCalendar(
             @RequestHeader("Authorization") String accessToken,
             @RequestParam(defaultValue = "2000-01-01 00") String from, @RequestParam(defaultValue = "3000-12-31 23") String to){
-        HttpStatus httpStatus = null;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
 
+        return calendarService.getCalendarList(jwtProvider.getPayload(accessToken), LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
 
-        ArrayList<CalendarResponse> body = calendarService.getCalendarList(accessToken, LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
-
-        if (body != null) {
-            httpStatus = HttpStatus.OK;
-        } else {
-            httpStatus = HttpStatus.UNAUTHORIZED;
-        }
-        return new ResponseEntity<>(body,httpStatus);
     }
 
 
@@ -45,16 +41,9 @@ public class CalendarController {
     public ResponseEntity<CalendarResponse> writeCalendar(
             @RequestHeader("Authorization") String accessToken,
             @RequestBody CalendarRequest request) {
-        HttpStatus httpStatus = null;
 
-        CalendarResponse body = calendarService.writeCalendar(accessToken, request);
+        return calendarService.writeCalendar(jwtProvider.getPayload(accessToken), request);
 
-        if (body!=null) {
-            httpStatus = HttpStatus.OK;
-        } else {
-            httpStatus = HttpStatus.UNAUTHORIZED;
-        }
-        return new ResponseEntity<>(body, httpStatus);
     }
 
 
@@ -62,16 +51,8 @@ public class CalendarController {
     public ResponseEntity<CalendarResponse> updateCalendar(
             @RequestHeader("Authorization") String accessToken,
             @RequestBody CalendarRequest request){
-        HttpStatus httpStatus = null;
+        return calendarService.updateCalendar(jwtProvider.getPayload(accessToken), request);
 
-        CalendarResponse body = calendarService.updateCalendar(accessToken, request);
-
-        if (body!=null) {
-            httpStatus = HttpStatus.OK;
-        } else {
-            httpStatus = HttpStatus.UNAUTHORIZED;
-        }
-        return new ResponseEntity<>(body, httpStatus);
 
     }
 }

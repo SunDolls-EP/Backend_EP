@@ -1,6 +1,6 @@
 package com.sundolls.epbackend.repository.impl;
 
-import com.querydsl.core.types.Projections;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -32,10 +32,13 @@ public class QuestionRepositoryImpl extends QuerydslRepositorySupport implements
     @Override
     public Page<Question> searchQuestions(Pageable pageable, String username, String tag, String title, String content, LocalDateTime from, LocalDateTime to) {
 
-        JPAQuery<Question> query = queryFactory.selectFrom(question)
+        JPAQuery<Tuple> query = queryFactory.select(question.id, question.title, question.user, question.createdAt, question.modifiedAt).from(question)
                 .where(eqUsername(username), eqTag(tag), containsTitle(title), containsContent(content), betweenCreatedAt(from, to));
+
         int totalCount = query.fetch().size();
-        List<Question> questions = getQuerydsl().applyPagination(pageable, query).fetch();
+        List<Tuple> questionTuple = getQuerydsl().applyPagination(pageable, query).fetch();
+
+        List<Question> questions = questionTuple.stream().map(this::toQuestion).toList();
 
         return new PageImpl<Question>(questions, pageable, totalCount);
     }
@@ -72,4 +75,17 @@ public class QuestionRepositoryImpl extends QuerydslRepositorySupport implements
     private BooleanExpression betweenCreatedAt(LocalDateTime from, LocalDateTime to) {
         return question.createdAt.between(from, to);
     }
+
+    private Question toQuestion(Tuple tuple) {
+        Question questionEntity = Question.builder()
+                .id(tuple.get(question.id))
+                .title(tuple.get(question.title))
+                .user(tuple.get(question.user))
+                .build();
+        questionEntity.setCreatedAt(tuple.get(question.createdAt));
+        questionEntity.setModifiedAt(tuple.get(question.modifiedAt));
+
+        return questionEntity;
+    }
+
 }

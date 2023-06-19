@@ -24,8 +24,14 @@ public class QuestionController {
     private final QuestionService questionService;
     private final JwtProvider jwtProvider;
 
-    @GetMapping("")
-    public ResponseEntity<Page<QuestionResponse>> getQuestions(
+    @GetMapping("/{questionId}")
+    public ResponseEntity<QuestionResponse> getQuestion(@PathVariable Long questionId) {
+        return questionService.getQuestion(questionId);
+
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<Page<QuestionResponse>> getQuestionList(
             Pageable pageable,
             @RequestParam(name = "title-keyword", required = false) String title,
             @RequestParam(name = "content-keyword", required = false) String content,
@@ -33,7 +39,7 @@ public class QuestionController {
             @RequestParam(name = "writer-tag", required = false) String writerTag,
             @RequestParam(name = "from", defaultValue = "2000-01-01 00")String from,
             @RequestParam(name = "to", defaultValue = "3000-12-31 23")String to
-            ) {
+    ) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
         return questionService.getQuestions(pageable, writerUsername, writerTag, title, content, LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
 

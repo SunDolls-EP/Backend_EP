@@ -1,8 +1,8 @@
 package com.sundolls.epbackend.service;
 
-import ch.qos.logback.core.joran.conditional.ThenAction;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.sundolls.epbackend.config.util.TagMaker;
 import com.sundolls.epbackend.dto.request.StudyInfoRequest;
 import com.sundolls.epbackend.dto.request.UserPatchRequest;
 import com.sundolls.epbackend.dto.response.FriendResponse;
@@ -31,13 +31,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.sql.Time;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 @Slf4j
@@ -49,6 +47,7 @@ public class UserService {
     private final StudyInfoRepository studyInfoRepository;
     private final JwtProvider jwtProvider;
     private final FriendMapper friendMapper;
+
     public ResponseEntity<UserResponse> join(String  idTokenString) throws GeneralSecurityException, IOException {
         GoogleIdToken idToken = googleIdTokenVerifier.verify(idTokenString);
         HttpStatus status = HttpStatus.OK;
@@ -65,9 +64,10 @@ public class UserService {
                 user = User.builder()
                         .id("google_" + id)
                         .username(username)
-                        .tag(makeTag(username))
+                        .tag(TagMaker.makeTag(username, userRepository.findAllByUsernameOrderByTagAsc(username)))
                         .password(null)
                         .email(email)
+                        .totalStudyTime(0)
                         .build();
                 userRepository.save(user);
             } else {
@@ -83,31 +83,17 @@ public class UserService {
         return new ResponseEntity<>(status);
     }
 
-    private String makeTag(String username) {
-        List<User> users = userRepository.findAllByUsernameOrderByTagAsc(username);
-        Random random = new Random();
-        String tag = null;
-
-        Verifier: while(true) {
-            tag = String.format("%04d", random.nextInt(10000));
-            for (User user : users) {
-                if (user.getTag().equals(tag)) {
-                    continue Verifier;
-                }
-            }
-            break;
-        }
-        return tag;
-    }
-
-
     @Transactional
     public ResponseEntity<UserResponse> updateUser(UserPatchRequest request, Jws<Claims> payload){
         HttpStatus status = HttpStatus.OK;
 
         User user = getUser(payload);
 
-        user.update(request.getUsername(),request.getSchoolName(), makeTag(request.getUsername()));
+        user.update(request.getUsername(),request.getSchoolName(),
+                TagMaker.makeTag(request.getUsername(),
+                        userRepository.findAllByUsernameOrderByTagAsc(request.getUsername())
+                ) //makeTag
+        );
 
         UserResponse body = UserMapper.MAPPER.toDto(user);
         if (request.getUsername() != null) {
@@ -244,20 +230,17 @@ public class UserService {
         return new ResponseEntity<>(body, status);
     }
 
-    public ResponseEntity<Void> postStudyInfo(Jws<Claims> payload, StudyInfoRequest request) {
+    @Transactional
+    public ResponseEntity<Void> makeStudyInfo(Jws<Claims> payload, StudyInfoRequest request) {
         HttpStatus status = HttpStatus.OK;
 
         User user = getUser(payload);
-
-        if ( Duration.between(request.getStartAt(), request.getEndAt()).getSeconds() > 86399 || Duration.between(request.getStartAt(), request.getEndAt()).getSeconds() < 1) {
-            status = HttpStatus.BAD_REQUEST;
-            return new ResponseEntity<>(status);
-        }
+        user.addTime(request.getTotalStudyTime());
 
         StudyInfo studyInfo = StudyInfo.builder()
                 .user(user)
                 .createdAt(request.getStartAt())
-                .time(Math.abs(Duration.between(request.getEndAt(), request.getStartAt()).getSeconds()))
+                .time(request.getTotalStudyTime())
                 .build();
         studyInfoRepository.save(studyInfo);
 
@@ -277,39 +260,12 @@ public class UserService {
     }
 
 
-
-
     private User getUser(Jws<Claims> payload){
         Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
         if (optionalUser.isEmpty()) {
             return null;
         }
         return optionalUser.get();
-    }
-
-    private User getTarget(String username){
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        User target = null;
-        if (optionalUser.isPresent()) {
-            target = optionalUser.get();
-        }
-        return target;
-    }
-
-    private FriendResponse makeResponse(User user, Friend friend){
-        FriendResponse friendResponse = new FriendResponse();
-        if(friend.getUser().getUsername().equals(user.getUsername())) {
-            friendResponse.setUsername(friend.getTargetUser().getUsername());
-            friendResponse.setSchoolName(friend.getTargetUser().getSchoolName());
-        } else {
-            friendResponse.setUsername(friend.getUser().getUsername());
-            friendResponse.setSchoolName(friend.getUser().getSchoolName());
-        }
-        friendResponse.setAccepted(friend.isAccepted());
-        friendResponse.setCreatedAt(friend.getCreatedAt());
-        friendResponse.setModifiedAt(friend.getModifiedAt());
-
-        return friendResponse;
     }
 
 }

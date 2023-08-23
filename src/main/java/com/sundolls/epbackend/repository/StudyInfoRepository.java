@@ -9,4 +9,5 @@ import java.util.List;
 
 public interface StudyInfoRepository extends JpaRepository<StudyInfo, Long> {
     List<StudyInfo> findByUserAndCreatedAtBetween(User user, LocalDateTime createdAtStart, LocalDateTime createdAtEnd);
+
 }

@@ -34,6 +34,9 @@ public class User extends BaseTimeEntity {
     @Column(name="SCHOOL_NAME")
     private String schoolName;
 
+    @Column(name="TOTAL_STUDY_TIME")
+    private Integer totalStudyTime;
+
     @Override
     public boolean equals(Object obj) {
         User user;
@@ -52,5 +55,9 @@ public class User extends BaseTimeEntity {
             this.schoolName = schoolName;
         if (username != null)
             this.tag = tag;
+    }
+
+    public void addTime(Integer studyTime) {
+        this.totalStudyTime += studyTime;
     }
 }

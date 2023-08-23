@@ -14,6 +14,7 @@ public class UserResponse {
     private String username;
     private String tag;
     private String schoolName;
+    private Integer totalStudyTime;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 }

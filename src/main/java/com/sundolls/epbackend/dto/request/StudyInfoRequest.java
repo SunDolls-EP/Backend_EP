@@ -11,6 +11,6 @@ import java.time.LocalDateTime;
 public class StudyInfoRequest {
     @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
     private LocalDateTime startAt;
-    @DateTimeFormat(pattern = "yyyy-MM-ddTHH:mm:ss")
-    private LocalDateTime endAt;
+
+    private Integer totalStudyTime;
 }

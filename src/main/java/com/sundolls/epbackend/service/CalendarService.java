@@ -30,6 +30,7 @@ import java.util.Optional;
 public class CalendarService {
     private final CalendarRepository calendarRepository;
     private final UserRepository userRepository;
+    private final CalendarMapper calendarMapper;
 
     public ResponseEntity<List<CalendarResponse>> getCalendarList(Jws<Claims> payload, LocalDateTime from, LocalDateTime to){
         HttpStatus status = HttpStatus.OK;
@@ -37,7 +38,7 @@ public class CalendarService {
         User user  = getUser(payload);
 
         ArrayList<Calendar> calendarArrayList = calendarRepository.findByCreatedAtBetweenAndUser(from, to, user);
-        List<CalendarResponse> body = calendarArrayList.stream().map(CalendarMapper.MAPPER::toDto).toList();
+        List<CalendarResponse> body = calendarArrayList.stream().map(calendarMapper::toDto).toList();
 
         return new ResponseEntity<>(body, status);
     }
@@ -61,7 +62,7 @@ public class CalendarService {
                 .build();
         calendarRepository.save(calendar);
 
-        CalendarResponse body = CalendarMapper.MAPPER.toDto(calendar);
+        CalendarResponse body = calendarMapper.toDto(calendar);
 
 
         return new ResponseEntity<>(body, status);
@@ -83,7 +84,7 @@ public class CalendarService {
         Calendar calendar = optionalCalendar.get();
         calendar.update(request.getContent());
 
-        CalendarResponse body = CalendarMapper.MAPPER.toDto(calendar);
+        CalendarResponse body = calendarMapper.toDto(calendar);
 
         return new ResponseEntity<>(body, status);
     }

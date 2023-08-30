@@ -47,6 +47,8 @@ public class UserService {
     private final StudyInfoRepository studyInfoRepository;
     private final JwtProvider jwtProvider;
     private final FriendMapper friendMapper;
+    private final StudyInfoMapper studyInfoMapper;
+    private final UserMapper userMapper;
 
     public ResponseEntity<UserResponse> join(String  idTokenString) throws GeneralSecurityException, IOException {
         GoogleIdToken idToken = googleIdTokenVerifier.verify(idTokenString);
@@ -75,7 +77,7 @@ public class UserService {
             }
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization",jwtProvider.generateToken(user.getUsername(), user.getTag()));
-            UserResponse body = UserMapper.MAPPER.toDto(user);
+            UserResponse body = userMapper.toDto(user);
 
             return new ResponseEntity<>(body, headers, status);
         }
@@ -95,7 +97,7 @@ public class UserService {
                 ) //makeTag
         );
 
-        UserResponse body = UserMapper.MAPPER.toDto(user);
+        UserResponse body = userMapper.toDto(user);
         if (request.getUsername() != null) {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization",jwtProvider.generateToken(user.getUsername(), user.getTag()));
@@ -113,7 +115,7 @@ public class UserService {
             status = HttpStatus.NOT_FOUND;
             return new ResponseEntity<>(status);
         }
-        UserResponse body = UserMapper.MAPPER.toDto(optionalUser.get());
+        UserResponse body = userMapper.toDto(optionalUser.get());
         return new ResponseEntity<>(body, status);
     }
 
@@ -125,7 +127,7 @@ public class UserService {
             status = HttpStatus.NOT_FOUND;
             return new ResponseEntity<>(status);
         }
-        UserResponse body = UserMapper.MAPPER.toDto(optionalUser.get());
+        UserResponse body = userMapper.toDto(optionalUser.get());
         return new ResponseEntity<>(body, status);
     }
 
@@ -153,7 +155,7 @@ public class UserService {
                 .build();
         friendRepository.save(friend);
 
-        UserResponse body = UserMapper.MAPPER.toDto(targetUser);
+        UserResponse body = userMapper.toDto(targetUser);
 
         return new ResponseEntity<>(body, httpStatus);
 
@@ -253,7 +255,7 @@ public class UserService {
         User user = getUser(payload);
 
         List<StudyInfo> studyInfos =  studyInfoRepository.findByUserAndCreatedAtBetween(user, from, to);
-        List<StudyInfoResponse> body = studyInfos.stream().map(StudyInfoMapper.MAPPER::toDto).toList();
+        List<StudyInfoResponse> body = studyInfos.stream().map(studyInfoMapper::toDto).toList();
         if (body.isEmpty()) status = HttpStatus.NOT_FOUND;
 
         return new ResponseEntity<>(body, status);

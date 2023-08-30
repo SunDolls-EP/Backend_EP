@@ -1,8 +1,11 @@
 package com.sundolls.epbackend.mapper;
 
+import com.sundolls.epbackend.dto.response.FriendResponse;
+import com.sundolls.epbackend.entity.Friend;
+import com.sundolls.epbackend.entity.User;
+
 public interface EntityMapper<D, E> {
 
-    E toEntity(final D dto);
-
     D toDto(final E entity);
+
 }

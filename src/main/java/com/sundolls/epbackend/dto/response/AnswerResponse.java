@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 public class AnswerResponse {
     private String writerName;
+    private String tag;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;

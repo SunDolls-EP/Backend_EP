@@ -27,6 +27,7 @@ public class AnswerService {
     private final AnswerRepository answerRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
+    private final AnswerMapper answerMapper;
 
     public ResponseEntity<AnswerResponse> postAnswer(Long questionId , Jws<Claims> payload, AnswerRequest request) {
         HttpStatus status = HttpStatus.OK;
@@ -52,7 +53,7 @@ public class AnswerService {
                 .build();
         answerRepository.save(answer);
 
-        return new ResponseEntity<>(AnswerMapper.MAPPER.toDto(answer), status);
+        return new ResponseEntity<>(answerMapper.toDto(answer), status);
 
     }
 
@@ -68,7 +69,7 @@ public class AnswerService {
 
         Page<Answer> answers = answerRepository.findByQuestion(question, pageable);
 
-        Page<AnswerResponse> body = answers.map(AnswerMapper.MAPPER::toDto);
+        Page<AnswerResponse> body = answers.map(answerMapper::toDto);
 
         return new ResponseEntity<>(body, status);
 
@@ -106,7 +107,7 @@ public class AnswerService {
         answer.update(request.getContent());
         answerRepository.save(answer);
 
-        return new ResponseEntity<>(AnswerMapper.MAPPER.toDto(answer), status);
+        return new ResponseEntity<>(answerMapper.toDto(answer), status);
 
     }
 
@@ -140,6 +141,6 @@ public class AnswerService {
         }
 
         answerRepository.delete(answer);
-        return new ResponseEntity<>(AnswerMapper.MAPPER.toDto(answer), status);
+        return new ResponseEntity<>(answerMapper.toDto(answer), status);
     }
 }

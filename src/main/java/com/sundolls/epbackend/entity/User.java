@@ -37,6 +37,9 @@ public class User extends BaseTimeEntity {
     @Column(name="TOTAL_STUDY_TIME")
     private Integer totalStudyTime;
 
+    @Column(name="PROFILE_IMAGE_URL")
+    private String profileUrl;
+
     @Override
     public boolean equals(Object obj) {
         User user;
@@ -48,13 +51,15 @@ public class User extends BaseTimeEntity {
         return this.id.equals(user.getId());
     }
 
-    public void update(String username, String schoolName, String tag){
+    public void update(String username, String schoolName, String tag, String profileUrl){
         if(username!=null)
             this.username = username;
         if(schoolName!=null)
             this.schoolName = schoolName;
         if (username != null)
             this.tag = tag;
+        if (profileUrl != null)
+            this.profileUrl = profileUrl;
     }
 
     public void addTime(Integer studyTime) {

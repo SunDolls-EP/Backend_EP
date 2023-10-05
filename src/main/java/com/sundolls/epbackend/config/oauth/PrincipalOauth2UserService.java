@@ -1,51 +1,92 @@
 package com.sundolls.epbackend.config.oauth;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.sundolls.epbackend.config.auth.PrincipalDetails;
+import com.sundolls.epbackend.config.oauth.provider.GoogleUserInfo;
 import com.sundolls.epbackend.config.oauth.provider.KakaoUserInfo;
 import com.sundolls.epbackend.config.oauth.provider.OAuth2UserInfo;
 import com.sundolls.epbackend.config.util.TagMaker;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+import java.net.URI;
+import java.security.GeneralSecurityException;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
+@PropertySource("/oauth.properties")
+public class PrincipalOauth2UserService {
     private final UserRepository userRepository;
+    private final RestTemplate restTemplate;
+    private final GoogleIdTokenVerifier googleIdTokenVerifier;
 
-    @Override
-    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        OAuth2User oAuth2User = super.loadUser(userRequest);
+    @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
+    String kakaoUserInfoUrl;
 
+
+    public User loadUser(String provider, String accessTokenString) throws OAuth2AuthenticationException, GeneralSecurityException, IOException {
         OAuth2UserInfo oAuth2UserInfo = null;
-        if (userRequest.getClientRegistration().getRegistrationId().equals("kakao")) {
-            oAuth2UserInfo = new KakaoUserInfo(oAuth2User.getAttributes());
+
+
+        if (provider.equals("kakao")) {
+            URI uri = URI.create(kakaoUserInfoUrl);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.setBearerAuth(accessTokenString);
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(headers);
+
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    uri,
+                    HttpMethod.GET,
+                    request,
+                    new ParameterizedTypeReference<Map<String, Object>>() {
+                    }
+            );
+
+            oAuth2UserInfo = new KakaoUserInfo(request.getBody());
+
+        } else if (provider.equals("google")) {
+            GoogleIdToken idToken = googleIdTokenVerifier.verify(accessTokenString);
+            oAuth2UserInfo = new GoogleUserInfo(idToken.getPayload());
+
         } else {
             throw new OAuth2AuthenticationException("");
         }
 
-        String provider = oAuth2UserInfo.getProvider();
         String providerId = oAuth2UserInfo.getProviderId();
         String username = oAuth2UserInfo.getName();
         String email = oAuth2UserInfo.getEmail();
+        String profileUrl = oAuth2UserInfo.getProfileUrl();
 
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new OAuth2AuthenticationException("");
+        User user = null;
+        if (userRepository.findByEmail(email).isEmpty()) {
+             user = User.builder()
+                    .id(provider + "_" + providerId)
+                    .username(username)
+                    .email(email)
+                    .tag(TagMaker.makeTag(username, userRepository.findAllByUsernameOrderByTagAsc(username)))
+                     .totalStudyTime(0)
+                     .profileUrl(profileUrl)
+                    .build();
+            userRepository.save(user);
+        } else {
+             user = userRepository.findByEmail(email).get();
+            if (!user.getUsername().equals(username))
+                user.update(username, null, TagMaker.makeTag(username, userRepository.findAllByUsernameOrderByTagAsc(username)), profileUrl);
         }
-        User user = User.builder()
-                .id(provider + "_" + providerId)
-                .username(username)
-                .email(email)
-                .tag(TagMaker.makeTag(username, userRepository.findAllByUsernameOrderByTagAsc(username)))
-                .build();
-        userRepository.save(user);
-
-        return new PrincipalDetails(user, oAuth2User.getAttributes());
+        return user;
     }
 }

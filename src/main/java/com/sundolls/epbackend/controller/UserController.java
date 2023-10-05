@@ -1,5 +1,6 @@
 package com.sundolls.epbackend.controller;
 
+import com.sundolls.epbackend.config.oauth.PrincipalOauth2UserService;
 import com.sundolls.epbackend.dto.request.StudyInfoRequest;
 import com.sundolls.epbackend.dto.request.UserPatchRequest;
 import com.sundolls.epbackend.dto.response.FriendResponse;
@@ -10,6 +11,8 @@ import com.sundolls.epbackend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -23,12 +26,23 @@ import java.util.List;
 @Slf4j
 public class UserController {
     private final UserService userService;
+    private final PrincipalOauth2UserService principalOauth2UserService;
     private final JwtProvider jwtProvider;
 
-    @GetMapping("/oauth2/code/")
-    public ResponseEntity<UserResponse> login(
+    /**
+    @GetMapping("/login/oauth2/google")
+    public ResponseEntity<UserResponse> googleLogin(
             @RequestHeader(value = "Authorization")String idTokenString ) throws GeneralSecurityException, IOException {
         return userService.join(idTokenString);
+    }
+     **/
+
+    @GetMapping("/login/oauth2/authorize/{provider}")
+    public ResponseEntity<UserResponse> oauthLogin(
+            @PathVariable(name = "provider") String provider,
+            @RequestHeader(value = "Authorization")String idTokenString) {
+
+        return userService.oauthLogin(provider, idTokenString);
     }
 
     @PutMapping("/api/user")
@@ -37,6 +51,8 @@ public class UserController {
             @RequestBody UserPatchRequest request){
         return userService.updateUser(request, jwtProvider.getPayload(accessTokenString));
     }
+
+
 
     @GetMapping("/api/user/{username}")
     public ResponseEntity<UserResponse> findUser(@PathVariable String username){
@@ -97,6 +113,5 @@ public class UserController {
        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
        return userService.getStudyInfos(jwtProvider.getPayload(accessTokenString), LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
    }
-
 
 }

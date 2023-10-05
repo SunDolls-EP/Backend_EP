@@ -23,7 +23,6 @@ import java.util.Map;
 @PropertySource("/jwt.properties")
 @RequiredArgsConstructor
 public class JwtProvider {
-    private final PrincipalDetailsService principalDetailsService;
 
     @Value("${jwt.secret}")
     private String secret;
@@ -67,12 +66,6 @@ public class JwtProvider {
         } catch (Exception e){
             return false;
         }
-    }
-
-
-    public UsernamePasswordAuthenticationToken getAuthentication(String jwtToken) {
-        PrincipalDetails principalDetails = principalDetailsService.loadUserByUsername(getPayload(jwtToken));
-        return new UsernamePasswordAuthenticationToken(principalDetails, principalDetails.getPassword(), principalDetails.getAuthorities());
     }
 
 }

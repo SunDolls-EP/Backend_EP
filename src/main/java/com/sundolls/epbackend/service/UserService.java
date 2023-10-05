@@ -1,11 +1,11 @@
 package com.sundolls.epbackend.service;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.sundolls.epbackend.config.oauth.PrincipalOauth2UserService;
 import com.sundolls.epbackend.config.util.TagMaker;
 import com.sundolls.epbackend.dto.request.StudyInfoRequest;
 import com.sundolls.epbackend.dto.request.UserPatchRequest;
 import com.sundolls.epbackend.dto.response.FriendResponse;
+import com.sundolls.epbackend.dto.response.RankResponse;
 import com.sundolls.epbackend.dto.response.StudyInfoResponse;
 import com.sundolls.epbackend.dto.response.UserResponse;
 import com.sundolls.epbackend.entity.Friend;
@@ -23,15 +23,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,47 +40,35 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
-    private final GoogleIdTokenVerifier googleIdTokenVerifier;
+    private final PrincipalOauth2UserService principalOauth2UserService;
     private final StudyInfoRepository studyInfoRepository;
     private final JwtProvider jwtProvider;
     private final FriendMapper friendMapper;
     private final StudyInfoMapper studyInfoMapper;
     private final UserMapper userMapper;
 
-    public ResponseEntity<UserResponse> join(String  idTokenString) throws GeneralSecurityException, IOException {
-        GoogleIdToken idToken = googleIdTokenVerifier.verify(idTokenString);
+    public ResponseEntity<UserResponse> oauthLogin(String provider, String  tokenString) {
         HttpStatus status = HttpStatus.OK;
 
-        if(idToken!=null) {
-            GoogleIdToken.Payload payload = idToken.getPayload();
-            String id = payload.getSubject();
-            String username = (String) payload.get("name");
-            String email = payload.getEmail();
-
-            Optional<User> optionalUser = userRepository.findByEmail(email);
-            User user = null;
-            if (optionalUser.isEmpty()) {
-                user = User.builder()
-                        .id("google_" + id)
-                        .username(username)
-                        .tag(TagMaker.makeTag(username, userRepository.findAllByUsernameOrderByTagAsc(username)))
-                        .password(null)
-                        .email(email)
-                        .totalStudyTime(0)
-                        .build();
-                userRepository.save(user);
-            } else {
-                user = optionalUser.get();
-            }
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization",jwtProvider.generateToken(user.getUsername(), user.getTag()));
-            UserResponse body = userMapper.toDto(user);
-
-            return new ResponseEntity<>(body, headers, status);
+        User user = null;
+        try {
+            user = principalOauth2UserService.loadUser(provider, tokenString);
+            log.info(user.getUsername()+"#"+user.getTag());
+            log.info(user.getEmail());
+            log.info(user.getSchoolName());
+        } catch (Exception e) {
+            status = HttpStatus.UNAUTHORIZED;
+            return new ResponseEntity<>(status);
         }
-        status = HttpStatus.UNAUTHORIZED;
-        return new ResponseEntity<>(status);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization",jwtProvider.generateToken(user.getUsername(), user.getTag()));
+        UserResponse body = userMapper.toDto(user);
+
+        return new ResponseEntity<>(body, headers, status);
+
     }
+
 
     @Transactional
     public ResponseEntity<UserResponse> updateUser(UserPatchRequest request, Jws<Claims> payload){
@@ -95,6 +80,7 @@ public class UserService {
                 TagMaker.makeTag(request.getUsername(),
                         userRepository.findAllByUsernameOrderByTagAsc(request.getUsername())
                 ) //makeTag
+                ,null
         );
 
         UserResponse body = userMapper.toDto(user);
@@ -106,6 +92,7 @@ public class UserService {
 
         return new ResponseEntity<>(body, status);
     }
+
 
     public ResponseEntity<UserResponse> findUser(String username){
         HttpStatus status = HttpStatus.OK;

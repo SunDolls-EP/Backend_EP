@@ -1,9 +1,12 @@
 package com.sundolls.epbackend.filter;
 
 
+import com.sundolls.epbackend.config.auth.PrincipalDetails;
+import com.sundolls.epbackend.config.auth.PrincipalDetailsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -22,12 +25,15 @@ import java.io.IOException;
 public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final PrincipalDetailsService principalDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = parseJwt(request);
         if(jwtProvider.validateToken(token)){
-            Authentication auth = jwtProvider.getAuthentication(token);
+            PrincipalDetails principalDetails = principalDetailsService.loadUserByUsername(jwtProvider.getPayload(token));
+            Authentication auth = new UsernamePasswordAuthenticationToken(principalDetails, principalDetails.getPassword(), principalDetails.getAuthorities());
+
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
         else {

@@ -39,7 +39,7 @@ import java.util.List;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtProvider jwtProvider;
-    private final PrincipalOauth2UserService principalOauth2UserService;
+    private final PrincipalDetailsService principalDetailsService;
 
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
@@ -80,15 +80,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin().disable()
                 .httpBasic().disable()
-                .oauth2Login()
-                .userInfoEndpoint()
-                .userService(principalOauth2UserService)
-                .and().and()
                 .authorizeRequests()
-                .antMatchers("/oauth2/code/**").permitAll()
+                .antMatchers("/login*/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .apply(new FilterConfig(jwtProvider))
+                .apply(new FilterConfig(jwtProvider, principalDetailsService))
                 .and()
                 .cors().configurationSource(request -> {
                     CorsConfiguration cors = new CorsConfiguration();

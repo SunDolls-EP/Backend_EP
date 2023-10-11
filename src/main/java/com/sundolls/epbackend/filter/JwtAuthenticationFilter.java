@@ -19,13 +19,29 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
+@Component
 @Slf4j
 public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
     private final PrincipalDetailsService principalDetailsService;
+
+    private static final ArrayList<String> SWAGGER_PATH = new ArrayList<>(List.of(
+            "/swagger-ui/index.html",
+            "/swagger-ui/swagger-ui.css",
+            "/swagger-ui/index.css",
+            "/swagger-ui/swagger-ui-bundle.js",
+            "/swagger-ui/swagger-ui-standalone-preset.js",
+            "/swagger-ui/swagger-initializer.js",
+            "/swagger-ui/favicon-32x32.png",
+            "/swagger-ui/favicon-16x16.png",
+            "/v3/api-docs/swagger-config",
+            "/v3/api-docs"
+    ));
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -35,10 +51,11 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
             Authentication auth = new UsernamePasswordAuthenticationToken(principalDetails, principalDetails.getPassword(), principalDetails.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(auth);
-        }
-        else {
+        } else if(SWAGGER_PATH.contains(request.getServletPath())){
+
+        } else {
             response.setStatus(401);
-        }
+       }
         filterChain.doFilter(request,response);
     }
 

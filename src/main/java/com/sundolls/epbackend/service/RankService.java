@@ -1,13 +1,13 @@
 package com.sundolls.epbackend.service;
 
-import com.sundolls.epbackend.dto.response.RankResponse;
+import com.sundolls.epbackend.dto.response.SchoolRankResponse;
+import com.sundolls.epbackend.dto.response.UserResponse;
 import com.sundolls.epbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,21 +20,21 @@ public class RankService {
 
     //학교 랭킹, 캐싱, 10개
     @Cacheable(cacheNames = "schoolRank")
-    public ResponseEntity<List<RankResponse>> getSchoolRanking() {
-        List<RankResponse> response = userRepository.getSchoolRank(10);
+    public ResponseEntity<List<SchoolRankResponse>> getSchoolRanking(Integer limit) {
+        List<SchoolRankResponse> response = userRepository.getSchoolRank(limit);
         return ResponseEntity.ok(response);
     }
 
     //학교내 랭킹, 10명
-    public ResponseEntity<List<RankResponse>> getUserRanking(String schoolName) {
-        List<RankResponse> response = userRepository.getPersonalRank(schoolName,10);
+    public ResponseEntity<List<UserResponse>> getUserRanking(String schoolName, Integer limit) {
+        List<UserResponse> response = userRepository.getPersonalRank(schoolName,limit);
         return ResponseEntity.ok(response);
     }
 
     //랭킹, 캐싱, 50명
     @Cacheable(cacheNames ="personalRank")
-    public ResponseEntity<List<RankResponse>> getUserRanking(){
-        List<RankResponse> response = userRepository.getPersonalRank(50);
+    public ResponseEntity<List<UserResponse>> getUserRanking(Integer limit){
+        List<UserResponse> response = userRepository.getPersonalRank(limit);
         return ResponseEntity.ok(response);
     }
 

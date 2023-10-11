@@ -13,7 +13,7 @@ public class RankScheduler {
     @Scheduled(cron = "0 0 1 * * *")
     public void rankInit() {
         rankService.deleteAllCache();
-        rankService.getSchoolRanking();
-        rankService.getUserRanking();
+        rankService.getSchoolRanking(15);
+        rankService.getUserRanking(50);
     }
 }

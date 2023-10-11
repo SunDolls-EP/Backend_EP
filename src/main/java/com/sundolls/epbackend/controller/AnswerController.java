@@ -4,13 +4,16 @@ import com.sundolls.epbackend.dto.request.AnswerRequest;
 import com.sundolls.epbackend.dto.response.AnswerResponse;
 import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.service.AnswerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("api/QnA/answer")
@@ -20,6 +23,8 @@ public class AnswerController {
     private final JwtProvider jwtProvider;
 
     @PostMapping("/{questionId}")
+    @Operation(summary = "답변 달기")
+    @Parameter(name = "questionId", description = "답변을 달 질문의 Id", required = true)
     public ResponseEntity<AnswerResponse> postAnswer(
             @RequestHeader("Authorization") String accessToken,
             @RequestBody AnswerRequest request,
@@ -29,6 +34,8 @@ public class AnswerController {
     }
 
     @GetMapping("/{questionId}")
+    @Operation(summary = "답변 가져오기")
+    @Parameter(name = "questionId", description = "답변을 가져올 질문의 Id", required = true)
     public ResponseEntity<Page<AnswerResponse>> getAnswers(
             @PathVariable(name = "questionId") Long questionId,
             Pageable pageable
@@ -37,6 +44,8 @@ public class AnswerController {
     }
 
     @PutMapping("/{answerId}")
+    @Operation(summary = "답변 수정")
+    @Parameter(name = "answerId", description = "수정할 답변의 Id", required = true)
     public ResponseEntity<AnswerResponse> updateAnswer(
             @RequestHeader("Authorization") String accessToken,
             @RequestBody AnswerRequest request,
@@ -46,6 +55,8 @@ public class AnswerController {
     }
 
     @DeleteMapping("/{answerId}")
+    @Operation(summary = "답변 삭제")
+    @Parameter(name = "answerId", description = "삭제할 답변의 Id", required = true)
     public ResponseEntity<AnswerResponse> deleteAnswer(
             @RequestHeader("Authorization") String accessToken,
             @PathVariable(name = "answerId") Long answerId

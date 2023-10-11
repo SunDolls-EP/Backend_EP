@@ -3,7 +3,6 @@ package com.sundolls.epbackend.config;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.sundolls.epbackend.config.auth.PrincipalDetailsService;
 import com.sundolls.epbackend.filter.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

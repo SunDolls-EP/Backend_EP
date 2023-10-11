@@ -4,12 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.sql.Time;
-
 @Getter
 @Setter
 @AllArgsConstructor
-public class RankResponse {
+public class SchoolRankResponse {
     private String name;
     private Integer totalStudyTime;
 }

@@ -6,13 +6,13 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '2.6.6'
+    id 'org.springframework.boot' version '2.6.5'
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
     id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
 
 group = 'com.sundolls'
-version = '0.0.3-SNAPSHOT'
+version = '0.0.5'
 sourceCompatibility = '17'
 
 configurations {
@@ -37,7 +37,7 @@ dependencies {
     implementation 'mysql:mysql-connector-java'
 
     //swagger
-    implementation 'io.springfox:springfox-boot-starter:3.0.0'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.9'
 
     //validate
     implementation 'org.springframework.boot:spring-boot-starter-validation:3.0.4'

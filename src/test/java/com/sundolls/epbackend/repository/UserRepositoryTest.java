@@ -1,19 +1,18 @@
 package com.sundolls.epbackend.repository;
 
 import com.sundolls.epbackend.config.TestConfig;
-import com.sundolls.epbackend.dto.response.RankResponse;
+import com.sundolls.epbackend.dto.response.SchoolRankResponse;
+import com.sundolls.epbackend.dto.response.UserResponse;
 import com.sundolls.epbackend.entity.User;
 
 import org.junit.jupiter.api.Test;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 
 import javax.persistence.EntityManager;
@@ -52,28 +51,28 @@ public class UserRepositoryTest {
 
     @Test
     public void rankSchoolQueryTest(){
-        List<RankResponse> rankResponses = userRepository.getSchoolRank(10);
+        List<SchoolRankResponse> rankResponses = userRepository.getSchoolRank(10);
 
-        for ( RankResponse response: rankResponses) {
+        for ( SchoolRankResponse response: rankResponses) {
             System.out.println(response.getName()+": "+response.getTotalStudyTime());
         }
     }
 
     @Test
     public void rankInSchoolQueryTest(){
-        List<RankResponse> rankResponses = userRepository.getPersonalRank("c",10);
+        List<UserResponse> rankResponses = userRepository.getPersonalRank("c",10);
 
-        for ( RankResponse response: rankResponses) {
-            System.out.println(response.getName()+": "+response.getTotalStudyTime());
+        for ( UserResponse response: rankResponses) {
+            System.out.println(response.toString());
         }
     }
 
     @Test
     public void rankPersonalQueryTest(){
-        List<RankResponse> rankResponses = userRepository.getPersonalRank(50);
+        List<UserResponse> rankResponses = userRepository.getPersonalRank(50);
 
-        for ( RankResponse response: rankResponses) {
-            System.out.println(response.getName()+": "+response.getTotalStudyTime());
+        for ( UserResponse response: rankResponses) {
+            System.out.println(response.toString());
         }
     }
 }

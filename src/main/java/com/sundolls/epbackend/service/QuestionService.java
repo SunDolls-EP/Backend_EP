@@ -26,6 +26,7 @@ import java.util.Optional;
 public class QuestionService {
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
+    private final QuestionMapper questionMapper;
 
     public ResponseEntity<QuestionResponse> writeQuestion(Jws<Claims> payload, QuestionRequest request) {
         HttpStatus status = HttpStatus.OK;
@@ -39,7 +40,7 @@ public class QuestionService {
                 .build();
         questionRepository.save(question);
 
-        QuestionResponse body = QuestionMapper.MAPPER.toDto(question);
+        QuestionResponse body = questionMapper.toDto(question);
 
         return new ResponseEntity<>(body, status);
     }
@@ -48,7 +49,7 @@ public class QuestionService {
         HttpStatus status = HttpStatus.OK;
 
         Page<Question> questions = questionRepository.searchQuestions(pageable, username, tag, title, content, from, to);
-        Page<QuestionResponse> body = questions.map(QuestionMapper.MAPPER::toDto);
+        Page<QuestionResponse> body = questions.map(questionMapper::toDto);
 
         return new ResponseEntity<>(body, status);
     }
@@ -63,7 +64,7 @@ public class QuestionService {
         }
         Question question = optionalQuestion.get();
 
-        QuestionResponse body = QuestionMapper.MAPPER.toDto(question);
+        QuestionResponse body = questionMapper.toDto(question);
 
         return new ResponseEntity<>(body, status);
     }
@@ -86,7 +87,7 @@ public class QuestionService {
 
         questionRepository.deleteById(questionId);
 
-        return new ResponseEntity<>(QuestionMapper.MAPPER.toDto(question), status);
+        return new ResponseEntity<>(questionMapper.toDto(question), status);
     }
     @Transactional
     public ResponseEntity<QuestionResponse> updateQuestion(Long questionId, Jws<Claims> payload, QuestionRequest request) {
@@ -107,7 +108,7 @@ public class QuestionService {
 
         question.update(request.getTitle(), request.getContent());
 
-        return new ResponseEntity<>(QuestionMapper.MAPPER.toDto(question), status);
+        return new ResponseEntity<>(questionMapper.toDto(question), status);
     }
 
     private User getUser(Jws<Claims> payload){

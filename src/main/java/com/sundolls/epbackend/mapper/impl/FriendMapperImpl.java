@@ -10,32 +10,28 @@ import org.springframework.stereotype.Component;
 public class FriendMapperImpl implements FriendMapper {
 
     @Override
-    public Friend toEntity(FriendResponse dto) {
-        if ( dto == null ) {
-            return null;
-        }
-
-        Friend.FriendBuilder friend = Friend.builder();
-
-        friend.accepted( dto.isAccepted() );
-
-        return friend.build();
-    }
-
-    @Override
     public FriendResponse toDto(Friend entity, User requester) {
         if ( entity == null ) {
             return null;
         }
 
         FriendResponse friendResponse = new FriendResponse();
+        if (requester.equals(entity.getUser())) {
+            friendResponse.setUsername(entity.getTargetUser().getUsername());
+            friendResponse.setTag(entity.getTargetUser().getTag());
+            friendResponse.setSchoolName(entity.getTargetUser().getSchoolName());
+            friendResponse.setTotalStudyTime(entity.getTargetUser().getTotalStudyTime());
+        } else {
+            friendResponse.setUsername(entity.getUser().getUsername());
+            friendResponse.setTag(entity.getUser().getTag());
+            friendResponse.setSchoolName(entity.getUser().getSchoolName());
+            friendResponse.setTotalStudyTime(entity.getUser().getTotalStudyTime());
+        }
 
-        friendResponse.setUsername( getTargetUsername(entity.getUser(), entity.getTargetUser(), requester));
-        friendResponse.setTag( getTargetTag(entity.getUser(), entity.getTargetUser(), requester) );
-        friendResponse.setSchoolName( getTargetSchoolName(entity.getUser(), entity.getTargetUser(), requester) );
-        friendResponse.setCreatedAt( getCreatedAt( entity.getUser() ) );
-        friendResponse.setModifiedAt( getModifiedAt( entity.getUser() ) );
-        friendResponse.setAccepted( entity.isAccepted() );
+        friendResponse.setAccepted(entity.isAccepted());
+        friendResponse.setCreatedAt(entity.getCreatedAt());
+        friendResponse.setModifiedAt(entity.getModifiedAt());
+        friendResponse.setAccepted(entity.isAccepted());
 
         return friendResponse;
     }

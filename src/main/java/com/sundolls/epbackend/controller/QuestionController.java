@@ -3,17 +3,15 @@ package com.sundolls.epbackend.controller;
 import com.sundolls.epbackend.dto.request.QuestionRequest;
 import com.sundolls.epbackend.dto.response.QuestionResponse;
 import com.sundolls.epbackend.filter.JwtProvider;
-import com.sundolls.epbackend.repository.QuestionRepository;
-import com.sundolls.epbackend.repository.UserRepository;
 import com.sundolls.epbackend.service.QuestionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.jni.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -25,12 +23,23 @@ public class QuestionController {
     private final JwtProvider jwtProvider;
 
     @GetMapping("/{questionId}")
+    @Operation(summary = "질문 받아오기")
+//    @Parameter(name = "questionId", description = "받아올 질문의 Id", dataTypeClass = Long.class)
     public ResponseEntity<QuestionResponse> getQuestion(@PathVariable Long questionId) {
         return questionService.getQuestion(questionId);
 
     }
 
     @GetMapping("/list")
+    @Operation(summary = "질문 리스트로 받아오기")
+    @Parameters({
+            @Parameter(name = "title", description = "질문의 제목에 포함될 키워드 (필수X)", required = false),
+            @Parameter(name = "content", description = "질문의 내용에 포함될 키워드 (필수X)",  required = false),
+            @Parameter(name = "writerUsername", description = "질문의 작성자 닉네임 (필수X)",  required = false),
+            @Parameter(name = "writerTag", description = "질문의 작성자 태그 (필수X)", required = false),
+            @Parameter(name = "from", description = "yyyy-mm-dd HH 형식으로 조회할 시작일 (기본값 2000-01-01 00)", required = true),
+            @Parameter(name = "to", description = "yyyy-mm-dd HH 형식으로 조회할 종료일 (기본값 3000-12-31 23)", required = true)
+    })
     public ResponseEntity<Page<QuestionResponse>> getQuestionList(
             Pageable pageable,
             @RequestParam(name = "title-keyword", required = false) String title,
@@ -46,6 +55,7 @@ public class QuestionController {
     }
 
     @PostMapping("")
+    @Operation(summary = "질문 작성")
     public ResponseEntity<QuestionResponse> writeQuestion(
             @RequestHeader(name = "Authorization") String accessToken,
             @RequestBody QuestionRequest request
@@ -54,6 +64,8 @@ public class QuestionController {
     }
 
     @PutMapping("/{questionId}")
+    @Operation(summary = "질문 수정")
+    @Parameter(name = "questionId", description = "수정할 질문의 Id", required = true)
     public ResponseEntity<QuestionResponse> updateQuestion(
             @RequestHeader(name = "Authorization") String accessToken,
             @PathVariable Long questionId,
@@ -63,6 +75,8 @@ public class QuestionController {
     }
 
     @DeleteMapping("/{questionId}")
+    @Operation(summary = "질문 삭제")
+    @Parameter(name = "questionId", description = "삭제할 질문의 Id", required = true)
     public ResponseEntity<QuestionResponse> deleteQuestion(
             @RequestHeader(name = "Authorization") String accessToken,
             @PathVariable Long questionId

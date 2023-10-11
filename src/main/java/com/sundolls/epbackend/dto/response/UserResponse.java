@@ -1,19 +1,21 @@
 package com.sundolls.epbackend.dto.response;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @ToString
 public class UserResponse {
     private String username;
     private String tag;
     private String schoolName;
+    private Integer totalStudyTime;
+    private String profileUrl;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 }

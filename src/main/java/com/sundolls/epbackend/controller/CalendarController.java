@@ -2,22 +2,17 @@ package com.sundolls.epbackend.controller;
 
 import com.sundolls.epbackend.dto.request.CalendarRequest;
 import com.sundolls.epbackend.dto.response.CalendarResponse;
-import com.sundolls.epbackend.entity.Calendar;
 import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.service.CalendarService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.w3c.dom.stylesheets.LinkStyle;
-
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/calendar")
@@ -27,6 +22,12 @@ public class CalendarController {
     private final JwtProvider jwtProvider;
 
     @GetMapping("")
+    @Operation(summary = "캘린더 가져오기")
+    @Parameters({
+            @Parameter(name = "from", description = "yyyy-mm-dd HH 형식으로 조회할 시작일 (기본값 2000-01-01 00)", required = true),
+            @Parameter(name = "to", description = "yyyy-mm-dd HH 형식으로 조회할 종료일 (기본값 3000-12-31 23)", required = true)
+    })
+
     public ResponseEntity<List<CalendarResponse>> getCalendar(
             @RequestHeader("Authorization") String accessToken,
             @RequestParam(defaultValue = "2000-01-01 00") String from, @RequestParam(defaultValue = "3000-12-31 23") String to){
@@ -38,6 +39,7 @@ public class CalendarController {
 
 
     @PostMapping("")
+    @Operation(summary = "캘린더 작성하기")
     public ResponseEntity<CalendarResponse> writeCalendar(
             @RequestHeader("Authorization") String accessToken,
             @RequestBody CalendarRequest request) {
@@ -48,6 +50,7 @@ public class CalendarController {
 
 
     @PutMapping("")
+    @Operation(summary = "캘린더 수정하기")
     public ResponseEntity<CalendarResponse> updateCalendar(
             @RequestHeader("Authorization") String accessToken,
             @RequestBody CalendarRequest request){

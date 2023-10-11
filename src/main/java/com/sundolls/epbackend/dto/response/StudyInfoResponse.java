@@ -1,5 +1,6 @@
 package com.sundolls.epbackend.dto.response;
 
+import com.sundolls.epbackend.entity.StudyInfo;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +12,5 @@ import java.time.LocalTime;
 @Setter
 public class StudyInfoResponse {
     private LocalDateTime startAt;
-    private LocalDateTime endAt;
-    private Time totalTime;
+    private Integer totalTime;
 }

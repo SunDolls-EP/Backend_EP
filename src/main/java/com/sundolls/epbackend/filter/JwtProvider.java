@@ -1,7 +1,5 @@
 package com.sundolls.epbackend.filter;
 
-import com.sundolls.epbackend.config.auth.PrincipalDetails;
-import com.sundolls.epbackend.config.auth.PrincipalDetailsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -10,9 +8,6 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -27,8 +22,9 @@ public class JwtProvider {
     @Value("${jwt.secret}")
     private String secret;
 
-    private final long VALID_MILLISECOND = 1000L *60 * 30;
+    private final long VALID_MILLISECOND = 1000L *60 * 30;  //30분
 
+    private final long REFRESH_VALID_MILLISECOND = 1000L * 60 * 60 * 24 * 7;  //일주일
     private Key getSecretKey(String secret){
         byte[] KeyBytes = secret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(KeyBytes);
@@ -42,7 +38,7 @@ public class JwtProvider {
                 .parseClaimsJws(jwtToken);
     }
 
-    public String generateToken(String username, String tag){
+    public String generateAccessToken(String username, String tag){
         Date date = new Date();
         Map<String, String> payload = new HashMap<>();
         payload.put("username",username);
@@ -66,6 +62,17 @@ public class JwtProvider {
         } catch (Exception e){
             return false;
         }
+    }
+
+    public String generateRefreshToken(String email){
+        Date date = new Date();
+
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(date)
+                .setExpiration(new Date(date.getTime()+REFRESH_VALID_MILLISECOND))
+                .signWith(getSecretKey(secret), SignatureAlgorithm.HS256)
+                .compact();
     }
 
 }

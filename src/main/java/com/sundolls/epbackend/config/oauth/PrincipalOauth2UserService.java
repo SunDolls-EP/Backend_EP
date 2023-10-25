@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @PropertySource("/oauth.properties")
 public class PrincipalOauth2UserService {
+
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;

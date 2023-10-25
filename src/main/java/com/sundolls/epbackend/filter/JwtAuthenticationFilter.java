@@ -5,11 +5,9 @@ import com.sundolls.epbackend.config.auth.PrincipalDetails;
 import com.sundolls.epbackend.config.auth.PrincipalDetailsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -23,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
-@Component
 @Slf4j
 public class JwtAuthenticationFilter  extends OncePerRequestFilter {
 
@@ -43,6 +40,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
             "/v3/api-docs"
     ));
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = parseJwt(request);
@@ -51,12 +49,12 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
             Authentication auth = new UsernamePasswordAuthenticationToken(principalDetails, principalDetails.getPassword(), principalDetails.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(auth);
-        } else if(SWAGGER_PATH.contains(request.getServletPath())){
 
-        } else {
-            response.setStatus(401);
-       }
-        filterChain.doFilter(request,response);
+            filterChain.doFilter(request,response);
+        }
+//        else if(SWAGGER_PATH.contains(request.getServletPath())){
+//            filterChain.doFilter(request,response);
+//        }
     }
 
     private String parseJwt(HttpServletRequest request){

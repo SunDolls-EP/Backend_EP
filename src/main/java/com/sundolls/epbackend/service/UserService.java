@@ -51,20 +51,30 @@ public class UserService {
         User user = null;
         try {
             user = principalOauth2UserService.loadUser(provider, tokenString);
-            log.info(user.getUsername()+"#"+user.getTag());
-            log.info(user.getEmail());
-            log.info(user.getSchoolName());
         } catch (Exception e) {
             status = HttpStatus.UNAUTHORIZED;
             return new ResponseEntity<>(status);
         }
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization",jwtProvider.generateToken(user.getUsername(), user.getTag()));
+        headers.set("Authorization",jwtProvider.generateAccessToken(user.getUsername(), user.getTag()));
+        headers.set("Refresh", jwtProvider.generateRefreshToken(user.getEmail()));
         UserResponse body = userMapper.toDto(user);
 
         return new ResponseEntity<>(body, headers, status);
 
+    }
+
+    public ResponseEntity<UserResponse> refreshLogin(String refreshTokenString) {
+        Optional<User> optionalUser =  userRepository.findByEmail(jwtProvider.getPayload(refreshTokenString).getBody().getSubject());
+        if (optionalUser.isEmpty() || jwtProvider.validateToken(refreshTokenString)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        User user = optionalUser.get();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization",jwtProvider.generateAccessToken(user.getUsername(), user.getTag()));
+        UserResponse body = userMapper.toDto(user);
+
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(body);
     }
 
 
@@ -84,7 +94,7 @@ public class UserService {
         UserResponse body = userMapper.toDto(user);
         if (request.getUsername() != null) {
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization",jwtProvider.generateToken(user.getUsername(), user.getTag()));
+            headers.set("Authorization",jwtProvider.generateAccessToken(user.getUsername(), user.getTag()));
             return new ResponseEntity<>(body, headers ,status);
         }
 

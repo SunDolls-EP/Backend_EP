@@ -12,7 +12,7 @@ plugins {
 }
 
 group = 'com.sundolls'
-version = '0.0.5'
+version = '0.0.8'
 sourceCompatibility = '17'
 
 configurations {
@@ -63,8 +63,9 @@ dependencies {
     //oauth2
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:3.0.4'
 
-    //redis
-    implementation 'org.springframework.boot:spring-boot-starter-cache:3.1.2'
+    //cache
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.1'
 
 }
 sourceSets {

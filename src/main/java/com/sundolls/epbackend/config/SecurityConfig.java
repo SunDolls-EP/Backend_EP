@@ -6,6 +6,8 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.sundolls.epbackend.config.auth.PrincipalDetailsService;
 import com.sundolls.epbackend.filter.JwtAuthenticationFilter;
 import com.sundolls.epbackend.filter.JwtProvider;
+import com.sundolls.epbackend.repository.UserRepository;
+import com.sundolls.epbackend.repository.UserRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -35,6 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtProvider jwtProvider;
     private final PrincipalDetailsService principalDetailsService;
+    private final UserRepository userRepository;
 
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
@@ -84,7 +87,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET).permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, principalDetailsService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, principalDetailsService, userRepository), UsernamePasswordAuthenticationFilter.class)
         ;
     }
 

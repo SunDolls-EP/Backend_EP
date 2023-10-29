@@ -1,11 +1,12 @@
 package com.sundolls.epbackend.controller;
 
-import com.sundolls.epbackend.config.oauth.PrincipalOauth2UserService;
+import com.sundolls.epbackend.config.auth.PrincipalDetails;
 import com.sundolls.epbackend.dto.request.StudyInfoRequest;
 import com.sundolls.epbackend.dto.request.UserPatchRequest;
 import com.sundolls.epbackend.dto.response.FriendResponse;
 import com.sundolls.epbackend.dto.response.StudyInfoResponse;
 import com.sundolls.epbackend.dto.response.UserResponse;
+import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +15,10 @@ import io.swagger.v3.oas.annotations.Parameters;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -27,19 +31,27 @@ public class UserController {
     private final UserService userService;
     private final JwtProvider jwtProvider;
 
+    @GetMapping("/random/list")
+    @Operation(summary = "유저 랜덤 리스트")
+    public ResponseEntity<List<UserResponse>> getRandomUserList(
+            @RequestParam(name = "limit", defaultValue = "10") Integer limit
+    ) {
+        return userService.getRandomUserList(limit);
+    }
+
     @PutMapping("")
     @Operation(summary = "유저 정보 수정")
     public ResponseEntity<UserResponse> updateUserInfo(
-            @RequestHeader(value = "Authorization")String accessTokenString,
+            @AuthenticationPrincipal User user,
             @RequestBody UserPatchRequest request){
-        return userService.updateUser(request, jwtProvider.getPayload(accessTokenString));
+        return userService.updateUser(request, user);
     }
 
 
 
     @GetMapping("/{username}")
     @Operation(summary = "이름으로 유저 찾기")
-    public ResponseEntity<UserResponse> findUser(@PathVariable String username){
+    public ResponseEntity<List<UserResponse>> findUser(@PathVariable String username){
         return userService.findUser(username);
    }
 
@@ -60,17 +72,17 @@ public class UserController {
            @Parameter(name = "tag", description = "사용자 태그", required = true)
    })
    public ResponseEntity<UserResponse> requestFriend(
-           @RequestHeader(value = "Authorization")String accessTokenString,
+           @AuthenticationPrincipal User user,
            @PathVariable String username,
            @PathVariable String tag) {
-        return userService.requestFriend(username, tag, jwtProvider.getPayload(accessTokenString));
+        return userService.requestFriend(username, tag, user);
    }
 
    @GetMapping("/friend")
    @Operation(summary = "친구 리스트 가져오기")
    public ResponseEntity<List<FriendResponse>> getFriends(
-           @RequestHeader(value = "Authorization")String accessTokenString) {
-        return userService.getFriendList(jwtProvider.getPayload(accessTokenString));
+           @AuthenticationPrincipal User user) {
+        return userService.getFriendList(user);
    }
 
    @DeleteMapping("/friend/{username}/{tag}")
@@ -80,10 +92,10 @@ public class UserController {
            @Parameter(name = "tag", description = "사용자 태그", required = true)
    })
    public ResponseEntity<FriendResponse> deleteFriend(
-           @RequestHeader(value = "Authorization")String accessTokenString,
+           @AuthenticationPrincipal User user,
            @PathVariable String username,
            @PathVariable String tag) {
-        return userService.deleteFriend(username, tag, jwtProvider.getPayload(accessTokenString));
+        return userService.deleteFriend(username, tag, user);
    }
 
    @PatchMapping("/friend/{username}/{tag}")
@@ -93,19 +105,19 @@ public class UserController {
            @Parameter(name = "tag", description = "사용자 태그", required = true)
    })
    public ResponseEntity<FriendResponse> acceptFriend(
-           @RequestHeader(value = "Authorization")String accessTokenString,
+           @AuthenticationPrincipal User user,
            @PathVariable String username,
            @PathVariable String tag) {
-        return userService.acceptFriend(username, tag,jwtProvider.getPayload(accessTokenString));
+        return userService.acceptFriend(username, tag, user);
    }
 
    @PostMapping("/study")
    @Operation(summary = "공부 기록 등록")
     public ResponseEntity<Void> postStudy(
-           @RequestHeader(value = "Authorization")String accessTokenString,
+           @AuthenticationPrincipal User user,
            @RequestBody StudyInfoRequest request
            ) {
-        return userService.makeStudyInfo(jwtProvider.getPayload(accessTokenString), request);
+        return userService.makeStudyInfo(user, request);
    }
 
    @GetMapping("/study")
@@ -115,11 +127,11 @@ public class UserController {
            @Parameter(name = "to", description = "yyyy-mm-dd HH 형식으로 조회할 종료일 (기본값 3000-12-31 23)", required = true)
    })
    public ResponseEntity<List<StudyInfoResponse>> getStudyInfo(
-           @RequestHeader(value = "Authorization")String accessTokenString,
+           @AuthenticationPrincipal User user,
            @RequestParam(defaultValue = "2000-01-01 00") String from,
            @RequestParam(defaultValue = "3000-12-31 23") String to) {
        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
-       return userService.getStudyInfos(jwtProvider.getPayload(accessTokenString), LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
+       return userService.getStudyInfos(user, LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
    }
 
 }

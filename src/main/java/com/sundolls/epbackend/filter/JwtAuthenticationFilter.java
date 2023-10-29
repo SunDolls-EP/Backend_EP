@@ -3,6 +3,7 @@ package com.sundolls.epbackend.filter;
 
 import com.sundolls.epbackend.config.auth.PrincipalDetails;
 import com.sundolls.epbackend.config.auth.PrincipalDetailsService;
+import com.sundolls.epbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,26 +28,30 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
     private final PrincipalDetailsService principalDetailsService;
 
-    private static final ArrayList<String> SWAGGER_PATH = new ArrayList<>(List.of(
-            "/swagger-ui/index.html",
-            "/swagger-ui/swagger-ui.css",
-            "/swagger-ui/index.css",
-            "/swagger-ui/swagger-ui-bundle.js",
-            "/swagger-ui/swagger-ui-standalone-preset.js",
-            "/swagger-ui/swagger-initializer.js",
-            "/swagger-ui/favicon-32x32.png",
-            "/swagger-ui/favicon-16x16.png",
-            "/v3/api-docs/swagger-config",
-            "/v3/api-docs"
-    ));
+    private final UserRepository userRepository;
+
+//    private static final ArrayList<String> SWAGGER_PATH = new ArrayList<>(List.of(
+//            "/swagger-ui/index.html",
+//            "/swagger-ui/swagger-ui.css",
+//            "/swagger-ui/index.css",
+//            "/swagger-ui/swagger-ui-bundle.js",
+//            "/swagger-ui/swagger-ui-standalone-preset.js",
+//            "/swagger-ui/swagger-initializer.js",
+//            "/swagger-ui/favicon-32x32.png",
+//            "/swagger-ui/favicon-16x16.png",
+//            "/v3/api-docs/swagger-config",
+//            "/v3/api-docs"
+//    ));
 
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = parseJwt(request);
         if(jwtProvider.validateToken(token)){
-            PrincipalDetails principalDetails = principalDetailsService.loadUserByUsername(jwtProvider.getPayload(token));
-            Authentication auth = new UsernamePasswordAuthenticationToken(principalDetails, principalDetails.getPassword(), principalDetails.getAuthorities());
+            String username = (String) jwtProvider.getPayload(token).getBody().get("username");
+            String tag = (String) jwtProvider.getPayload(token).getBody().get("tag");
+            PrincipalDetails principalDetails = (PrincipalDetails) principalDetailsService.loadUserByUsername(username+","+tag);
+            Authentication auth = new UsernamePasswordAuthenticationToken(userRepository.findByUsernameAndTag(username, tag).get(), principalDetails.getPassword(), principalDetails.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(auth);
 

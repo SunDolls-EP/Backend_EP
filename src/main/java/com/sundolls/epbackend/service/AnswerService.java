@@ -29,20 +29,11 @@ public class AnswerService {
     private final UserRepository userRepository;
     private final AnswerMapper answerMapper;
 
-    public ResponseEntity<AnswerResponse> postAnswer(Long questionId , Jws<Claims> payload, AnswerRequest request) {
-        HttpStatus status = HttpStatus.OK;
-
-        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
-        if (optionalUser.isEmpty()) {
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
-            return new ResponseEntity<>(status);
-        }
-        User user = optionalUser.get();
+    public ResponseEntity<AnswerResponse> postAnswer(Long questionId , User user, AnswerRequest request) {
 
         Optional<Question> optionalQuestion = questionRepository.findById(questionId);
         if (optionalQuestion.isEmpty()) {
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.ok().build();
         }
         Question question = optionalQuestion.get();
 
@@ -53,7 +44,7 @@ public class AnswerService {
                 .build();
         answerRepository.save(answer);
 
-        return new ResponseEntity<>(answerMapper.toDto(answer), status);
+        return ResponseEntity.ok(answerMapper.toDto(answer));
 
     }
 
@@ -75,72 +66,41 @@ public class AnswerService {
 
     }
 
-    public ResponseEntity<AnswerResponse> updateAnswer(Long answerId, Jws<Claims> payload, AnswerRequest request) {
-        HttpStatus status = HttpStatus.OK;
-
-        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
-        if (optionalUser.isEmpty()) {
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
-            return new ResponseEntity<>(status);
-        }
-        User user = optionalUser.get();
+    public ResponseEntity<AnswerResponse> updateAnswer(Long answerId, User user, AnswerRequest request) {
 
         Optional<Answer> optionalAnswer = answerRepository.findById(answerId);
         if (optionalAnswer.isEmpty()) {
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.notFound().build();
         }
         Answer answer = optionalAnswer.get();
 
-        optionalUser = userRepository.findById(answer.getUser().getId());
-        if (optionalUser.isEmpty()) {
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
-            return new ResponseEntity<>(status);
-        }
-        User answerWriter = optionalUser.get();
+        User answerWriter = userRepository.findById(answer.getUser().getId()).get();
 
         if (!user.equals(answerWriter)) {
-            status = HttpStatus.FORBIDDEN;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         answer.update(request.getContent());
         answerRepository.save(answer);
 
-        return new ResponseEntity<>(answerMapper.toDto(answer), status);
+        return ResponseEntity.ok(answerMapper.toDto(answer));
 
     }
 
-    public ResponseEntity<AnswerResponse> deleteAnswer(Long answerId, Jws<Claims> payload) {
-        HttpStatus status = HttpStatus.OK;
-
-        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
-        if (optionalUser.isEmpty()) {
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
-            return new ResponseEntity<>(status);
-        }
-        User user = optionalUser.get();
-
+    public ResponseEntity<AnswerResponse> deleteAnswer(Long answerId, User user) {
         Optional<Answer> optionalAnswer = answerRepository.findById(answerId);
         if (optionalAnswer.isEmpty()) {
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.notFound().build();
         }
         Answer answer = optionalAnswer.get();
 
-        optionalUser = userRepository.findById(answer.getUser().getId());
-        if (optionalUser.isEmpty()) {
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
-            return new ResponseEntity<>(status);
-        }
-        User answerWriter = optionalUser.get();
+        User answerWriter = userRepository.findById(answer.getUser().getId()).get();
 
         if (!user.equals(answerWriter)) {
-            status = HttpStatus.FORBIDDEN;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         answerRepository.delete(answer);
-        return new ResponseEntity<>(answerMapper.toDto(answer), status);
+        return ResponseEntity.ok(answerMapper.toDto(answer));
     }
 }

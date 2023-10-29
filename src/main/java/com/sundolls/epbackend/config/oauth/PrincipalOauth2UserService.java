@@ -58,7 +58,7 @@ public class PrincipalOauth2UserService {
                     }
             );
 
-            oAuth2UserInfo = new KakaoUserInfo(request.getBody());
+            oAuth2UserInfo = new KakaoUserInfo(response.getBody());
 
         } else if (provider.equals("google")) {
             GoogleIdToken idToken = googleIdTokenVerifier.verify(accessTokenString);

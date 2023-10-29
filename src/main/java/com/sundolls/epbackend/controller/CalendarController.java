@@ -2,6 +2,7 @@ package com.sundolls.epbackend.controller;
 
 import com.sundolls.epbackend.dto.request.CalendarRequest;
 import com.sundolls.epbackend.dto.response.CalendarResponse;
+import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.service.CalendarService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,12 +31,12 @@ public class CalendarController {
     })
 
     public ResponseEntity<List<CalendarResponse>> getCalendar(
-            @RequestHeader("Authorization") String accessToken,
+            @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "2000-01-01 00") String from,
             @RequestParam(defaultValue = "3000-12-31 23") String to){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
 
-        return calendarService.getCalendarList(jwtProvider.getPayload(accessToken), LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
+        return calendarService.getCalendarList(user, LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
 
     }
 
@@ -42,10 +44,10 @@ public class CalendarController {
     @PostMapping("")
     @Operation(summary = "캘린더 작성하기")
     public ResponseEntity<CalendarResponse> writeCalendar(
-            @RequestHeader("Authorization") String accessToken,
+            @AuthenticationPrincipal User user,
             @RequestBody CalendarRequest request) {
 
-        return calendarService.writeCalendar(jwtProvider.getPayload(accessToken), request);
+        return calendarService.writeCalendar(user, request);
 
     }
 
@@ -53,9 +55,9 @@ public class CalendarController {
     @PutMapping("")
     @Operation(summary = "캘린더 수정하기")
     public ResponseEntity<CalendarResponse> updateCalendar(
-            @RequestHeader("Authorization") String accessToken,
+            @AuthenticationPrincipal User user,
             @RequestBody CalendarRequest request){
-        return calendarService.updateCalendar(jwtProvider.getPayload(accessToken), request);
+        return calendarService.updateCalendar(user, request);
 
 
     }

@@ -77,12 +77,13 @@ public class UserService {
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body(body);
     }
 
+    public ResponseEntity<List<UserResponse>> getRandomUserList(Integer limit) {
+        return ResponseEntity.ok(userRepository.findByRandom(limit).stream().map(userMapper::toDto).toList());
+    }
+
 
     @Transactional
-    public ResponseEntity<UserResponse> updateUser(UserPatchRequest request, Jws<Claims> payload){
-        HttpStatus status = HttpStatus.OK;
-
-        User user = getUser(payload);
+    public ResponseEntity<UserResponse> updateUser(UserPatchRequest request, User user){
 
         user.update(request.getUsername(),request.getSchoolName(),
                 TagMaker.makeTag(request.getUsername(),
@@ -95,22 +96,22 @@ public class UserService {
         if (request.getUsername() != null) {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization",jwtProvider.generateAccessToken(user.getUsername(), user.getTag()));
-            return new ResponseEntity<>(body, headers ,status);
+            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(body);
         }
 
-        return new ResponseEntity<>(body, status);
+        return ResponseEntity.ok(body);
     }
 
 
-    public ResponseEntity<UserResponse> findUser(String username){
+    public ResponseEntity<List<UserResponse>> findUser(String username){
         HttpStatus status = HttpStatus.OK;
 
-        Optional<User> optionalUser = userRepository.findByUsername(username);
-        if(optionalUser.isEmpty()){
+        List<User> userList = userRepository.findByUsername(username);
+        if(userList.isEmpty()){
             status = HttpStatus.NOT_FOUND;
             return new ResponseEntity<>(status);
         }
-        UserResponse body = userMapper.toDto(optionalUser.get());
+        List<UserResponse> body = userList.stream().map(userMapper::toDto).toList();
         return new ResponseEntity<>(body, status);
     }
 
@@ -126,17 +127,14 @@ public class UserService {
         return new ResponseEntity<>(body, status);
     }
 
-    public ResponseEntity<UserResponse> requestFriend(String targetUsername,String targetTag ,Jws<Claims> payload){
-        HttpStatus httpStatus = HttpStatus.OK;
+    public ResponseEntity<UserResponse> requestFriend(String targetUsername,String targetTag ,User requesterUser){
 
         Optional<User> optionalUser = userRepository.findByUsernameAndTag(targetUsername, targetTag);
         if (optionalUser.isEmpty()) {
-            httpStatus = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(httpStatus);
+            return ResponseEntity.notFound().build();
         }
         User targetUser = optionalUser.get();
 
-        User requesterUser = getUser(payload);
 
         FriendId friendId = new FriendId();
         friendId.setUserId(requesterUser.getId());
@@ -152,14 +150,11 @@ public class UserService {
 
         UserResponse body = userMapper.toDto(targetUser);
 
-        return new ResponseEntity<>(body, httpStatus);
+        return ResponseEntity.ok(body);
 
     }
 
-    public ResponseEntity<List<FriendResponse>> getFriendList(Jws<Claims> payload){
-        HttpStatus status = HttpStatus.OK;
-
-        User user = getUser(payload);
+    public ResponseEntity<List<FriendResponse>> getFriendList(User user){
 
         List<Friend> friends = new ArrayList<>();
 
@@ -170,14 +165,11 @@ public class UserService {
 
         List<FriendResponse> body = friends.stream().map( friend -> friendMapper.toDto(friend, user)  ).toList();
 
-        return new ResponseEntity<>(body, status);
+        return ResponseEntity.ok(body);
 
     }
 
-    public ResponseEntity<FriendResponse> deleteFriend(String username, String tag, Jws<Claims> payload){
-        HttpStatus status = HttpStatus.OK;
-
-        User user = getUser(payload);
+    public ResponseEntity<FriendResponse> deleteFriend(String username, String tag, User user){
         User targetUser = userRepository.findByUsernameAndTag(username, tag).get();
 
         Optional<Friend> optionalFriend = friendRepository.findByUserAndTargetUser(user, targetUser);
@@ -185,8 +177,7 @@ public class UserService {
             optionalFriend = friendRepository.findByUserAndTargetUser(targetUser, user);
         }
         if (optionalFriend.isEmpty()){
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.notFound().build();
         }
         Friend friend = optionalFriend.get();
 
@@ -194,14 +185,11 @@ public class UserService {
 
         friendRepository.delete(friend);
 
-        return new ResponseEntity<>(body, status);
+        return ResponseEntity.ok(body);
 
     }
 
-    public ResponseEntity<FriendResponse> acceptFriend(String username, String tag, Jws<Claims> payload){
-        HttpStatus status = HttpStatus.OK;
-
-        User user = getUser(payload);
+    public ResponseEntity<FriendResponse> acceptFriend(String username, String tag, User user){
         User targetUser = userRepository.findByUsernameAndTag(username, tag).get();
 
         Optional<Friend> optionalFriend = friendRepository.findByUserAndTargetUser(user, targetUser);
@@ -209,14 +197,12 @@ public class UserService {
             optionalFriend = friendRepository.findByUserAndTargetUser(targetUser, user);
         }
         if (optionalFriend.isEmpty()){
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.notFound().build();
         }
         Friend friend = optionalFriend.get();
 
         if (! friend.getTargetUser().equals(user)){
-            status = HttpStatus.FORBIDDEN;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         friend.accept();
@@ -224,14 +210,12 @@ public class UserService {
 
         FriendResponse body = friendMapper.toDto(friend, user);
 
-        return new ResponseEntity<>(body, status);
+        return ResponseEntity.ok(body);
     }
 
     @Transactional
-    public ResponseEntity<Void> makeStudyInfo(Jws<Claims> payload, StudyInfoRequest request) {
-        HttpStatus status = HttpStatus.OK;
+    public ResponseEntity<Void> makeStudyInfo(User user, StudyInfoRequest request) {
 
-        User user = getUser(payload);
         user.addTime(request.getTotalStudyTime());
 
         StudyInfo studyInfo = StudyInfo.builder()
@@ -241,28 +225,17 @@ public class UserService {
                 .build();
         studyInfoRepository.save(studyInfo);
 
-        return new ResponseEntity<>(status);
+        return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<List<StudyInfoResponse>> getStudyInfos(Jws<Claims> payload, LocalDateTime from, LocalDateTime to) {
-        HttpStatus status = HttpStatus.OK;
-
-        User user = getUser(payload);
+    public ResponseEntity<List<StudyInfoResponse>> getStudyInfos(User user, LocalDateTime from, LocalDateTime to) {
 
         List<StudyInfo> studyInfos =  studyInfoRepository.findByUserAndCreatedAtBetween(user, from, to);
         List<StudyInfoResponse> body = studyInfos.stream().map(studyInfoMapper::toDto).toList();
-        if (body.isEmpty()) status = HttpStatus.NOT_FOUND;
+        if (body.isEmpty()) return ResponseEntity.notFound().build();
 
-        return new ResponseEntity<>(body, status);
+        return ResponseEntity.ok(body);
     }
 
-
-    private User getUser(Jws<Claims> payload){
-        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-        return optionalUser.get();
-    }
 
 }

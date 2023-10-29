@@ -28,13 +28,10 @@ public class QuestionService {
     private final UserRepository userRepository;
     private final QuestionMapper questionMapper;
 
-    public ResponseEntity<QuestionResponse> writeQuestion(Jws<Claims> payload, QuestionRequest request) {
-        HttpStatus status = HttpStatus.OK;
-
-        User writer = getUser(payload);
+    public ResponseEntity<QuestionResponse> writeQuestion(User user, QuestionRequest request) {
 
         Question question = Question.builder()
-                .user(writer)
+                .user(user)
                 .title(request.getTitle())
                 .content(request.getContent())
                 .build();
@@ -42,7 +39,7 @@ public class QuestionService {
 
         QuestionResponse body = questionMapper.toDto(question);
 
-        return new ResponseEntity<>(body, status);
+        return ResponseEntity.ok(body);
     }
 
     public ResponseEntity<Page<QuestionResponse>> getQuestions(Pageable pageable, String username, String tag, String title, String content, LocalDateTime from, LocalDateTime to) {
@@ -69,55 +66,35 @@ public class QuestionService {
         return new ResponseEntity<>(body, status);
     }
 
-    public ResponseEntity<QuestionResponse> deleteQuestion(Long questionId, Jws<Claims> payload) {
-        HttpStatus status = HttpStatus.OK;
-
-        User user = getUser(payload);
+    public ResponseEntity<QuestionResponse> deleteQuestion(Long questionId, User user) {
 
         Optional<Question> optionalQuestion = questionRepository.findById(questionId);
         if (optionalQuestion.isEmpty()) {
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.notFound().build();
         }
         Question question = optionalQuestion.get();
         if (!user.equals(question.getUser())) {
-            status = HttpStatus.FORBIDDEN;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         questionRepository.deleteById(questionId);
 
-        return new ResponseEntity<>(questionMapper.toDto(question), status);
+        return ResponseEntity.ok(questionMapper.toDto(question));
     }
     @Transactional
-    public ResponseEntity<QuestionResponse> updateQuestion(Long questionId, Jws<Claims> payload, QuestionRequest request) {
-        HttpStatus status = HttpStatus.OK;
-
-        User user = getUser(payload);
+    public ResponseEntity<QuestionResponse> updateQuestion(Long questionId, User user, QuestionRequest request) {
 
         Optional<Question> optionalQuestion = questionRepository.findById(questionId);
         if (optionalQuestion.isEmpty()) {
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.notFound().build();
         }
         Question question = optionalQuestion.get();
         if (!user.equals(question.getUser())) {
-            status = HttpStatus.FORBIDDEN;
-            return new ResponseEntity<>(status);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         question.update(request.getTitle(), request.getContent());
 
-        return new ResponseEntity<>(questionMapper.toDto(question), status);
+        return ResponseEntity.ok(questionMapper.toDto(question));
     }
-
-    private User getUser(Jws<Claims> payload){
-        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-        return optionalUser.get();
-    }
-
-
 }

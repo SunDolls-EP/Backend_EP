@@ -2,6 +2,7 @@ package com.sundolls.epbackend.controller;
 
 import com.sundolls.epbackend.dto.request.QuestionRequest;
 import com.sundolls.epbackend.dto.response.QuestionResponse;
+import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.service.QuestionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -57,31 +59,31 @@ public class QuestionController {
     @PostMapping("")
     @Operation(summary = "질문 작성")
     public ResponseEntity<QuestionResponse> writeQuestion(
-            @RequestHeader(name = "Authorization") String accessToken,
+            @AuthenticationPrincipal User user,
             @RequestBody QuestionRequest request
             ) {
-        return questionService.writeQuestion(jwtProvider.getPayload(accessToken), request);
+        return questionService.writeQuestion(user, request);
     }
 
     @PutMapping("/{questionId}")
     @Operation(summary = "질문 수정")
     @Parameter(name = "questionId", description = "수정할 질문의 Id", required = true)
     public ResponseEntity<QuestionResponse> updateQuestion(
-            @RequestHeader(name = "Authorization") String accessToken,
+            @AuthenticationPrincipal User user,
             @PathVariable Long questionId,
             @RequestBody QuestionRequest request
     ){
-        return questionService.updateQuestion(questionId, jwtProvider.getPayload(accessToken), request);
+        return questionService.updateQuestion(questionId, user, request);
     }
 
     @DeleteMapping("/{questionId}")
     @Operation(summary = "질문 삭제")
     @Parameter(name = "questionId", description = "삭제할 질문의 Id", required = true)
     public ResponseEntity<QuestionResponse> deleteQuestion(
-            @RequestHeader(name = "Authorization") String accessToken,
+            @AuthenticationPrincipal User user,
             @PathVariable Long questionId
     ){
-        return questionService.deleteQuestion(questionId, jwtProvider.getPayload(accessToken));
+        return questionService.deleteQuestion(questionId, user);
     }
 
 }

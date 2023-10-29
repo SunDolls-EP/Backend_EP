@@ -12,27 +12,11 @@ import java.util.Map;
 
 
 @RequiredArgsConstructor
-public class PrincipalDetails implements UserDetails, OAuth2User {
+public class PrincipalDetails implements UserDetails {
     private User user;
-    private Map<String, Object> attributes;
-
-    public PrincipalDetails(User user, Map<String, Object> attributes) {
-        this.user = user;
-        this.attributes = attributes;
-    }
 
     public PrincipalDetails(User user) {
         this.user = user;
-    }
-
-    public PrincipalDetails(Map<String, Object> attributes) {
-        this.attributes = attributes;
-    }
-
-
-    @Override
-    public Map<String, Object> getAttributes() {
-        return attributes;
     }
 
     @Override
@@ -68,10 +52,5 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    @Override
-    public String getName() {
-        return null;
     }
 }

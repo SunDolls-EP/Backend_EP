@@ -20,13 +20,8 @@ public class PrincipalDetailsService implements UserDetailsService {
         String[] str = username.split(",");
         String name = str[0];
         String tag = str[1];
-        Optional<User> optionalUser =  userRepository.findByUsernameAndTag(name, tag);
-        User user;
-        if(optionalUser.isPresent()) {
-            user = optionalUser.get();
-        } else {
-            return null;
-        }
+        User user =  userRepository.findByUsernameAndTag(name, tag)
+                .orElseThrow(() -> new UsernameNotFoundException("user not found"));
 
         return new PrincipalDetails(user);
     }

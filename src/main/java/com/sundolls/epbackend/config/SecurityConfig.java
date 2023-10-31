@@ -37,7 +37,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtProvider jwtProvider;
     private final PrincipalDetailsService principalDetailsService;
-    private final UserRepository userRepository;
 
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
@@ -60,22 +59,26 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String[] SWAGGER_PATH = {
             "/swagger-ui.html",
             "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/api/auth/**",
+            "/v3/api-docs/**"
+    };
+
+    private static final String[] AUTH_FREE_PATH = {
             "/api/rank/**",
             "/api/rank"
     };
 
+
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers(SWAGGER_PATH);
+        web.ignoring()
+                .antMatchers(SWAGGER_PATH)
+                .antMatchers("/api/auth/**");
     }
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
 
         http
-
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
@@ -83,11 +86,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .httpBasic().disable()
                 .cors().disable()
                 .authorizeRequests()
-                //.antMatchers(SWAGGER_PATH).permitAll()
-                .antMatchers(HttpMethod.GET).permitAll()
-                .anyRequest().authenticated()
+                .antMatchers(AUTH_FREE_PATH).permitAll()
                 .and()
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, principalDetailsService, userRepository), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, principalDetailsService), UsernamePasswordAuthenticationFilter.class)
         ;
     }
 

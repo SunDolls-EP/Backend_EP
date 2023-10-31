@@ -9,7 +9,10 @@ import com.sundolls.epbackend.config.oauth.provider.OAuth2UserInfo;
 import com.sundolls.epbackend.config.util.TagMaker;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.repository.UserRepository;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.ParameterizedTypeReference;
@@ -23,49 +26,65 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.net.URI;
 import java.security.GeneralSecurityException;
+import java.security.Timestamp;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @PropertySource("/oauth.properties")
+@Slf4j
 public class PrincipalOauth2UserService {
 
     private final UserRepository userRepository;
-    private final RestTemplate restTemplate;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
 
-    @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
-    String kakaoUserInfoUrl;
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    String kakaoClientId;
+
+    @Value("${spring.security.oauth2.client.registration.kakao.nonce}")
+    String kakaoNonce;
 
 
-    public User loadUser(String provider, String accessTokenString) throws OAuth2AuthenticationException, GeneralSecurityException, IOException {
+    public User loadUser(String provider, String idTokenString) {
         OAuth2UserInfo oAuth2UserInfo = null;
 
 
         if (provider.equals("kakao")) {
-            URI uri = URI.create(kakaoUserInfoUrl);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            headers.setBearerAuth(accessTokenString);
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(headers);
-
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                    uri,
-                    HttpMethod.GET,
-                    request,
-                    new ParameterizedTypeReference<Map<String, Object>>() {
-                    }
-            );
-
-            oAuth2UserInfo = new KakaoUserInfo(response.getBody());
+            String[] chunks = idTokenString.split("\\.");
+            Base64.Decoder decoder = Base64.getUrlDecoder();
+            String payload = new String(decoder.decode(chunks[1]));
+            payload = payload.substring(1, payload.length() - 1);
+            String[] payloadArr = payload.split(",");
+            Map<String, Object> kakaoPayload = new HashMap<>();
+            for (String str : payloadArr ) {
+                kakaoPayload.put((str.split(":", 2)[0]).replaceAll("\"","") , (str.split(":", 2)[1]).replaceAll("\"",""));
+            }
+            if (
+                    ((String) kakaoPayload.get("iss")).equals("https://kauth.kakao.com")
+                            &&
+                    ((String)kakaoPayload.get("aud")).equals(kakaoClientId)
+                            &&
+                    (Long.parseLong((String) kakaoPayload.get("exp")) > (System.currentTimeMillis() / 1000))
+                            &&
+                    ((String)kakaoPayload.get("nonce")).equals(kakaoNonce)
+            ) {
+                oAuth2UserInfo = new KakaoUserInfo(kakaoPayload);
+            } else {
+                throw new OAuth2AuthenticationException("kakao Id Token validation failed.");
+            }
 
         } else if (provider.equals("google")) {
-            GoogleIdToken idToken = googleIdTokenVerifier.verify(accessTokenString);
-            oAuth2UserInfo = new GoogleUserInfo(idToken.getPayload());
+            try {
+
+                GoogleIdToken idToken = googleIdTokenVerifier.verify(idTokenString);
+                oAuth2UserInfo = new GoogleUserInfo(idToken.getPayload());
+            } catch (GeneralSecurityException | IOException e) {
+            }
 
         } else {
-            throw new OAuth2AuthenticationException("");
+            throw new OAuth2AuthenticationException("unknown oauth provider.");
         }
 
         String providerId = oAuth2UserInfo.getProviderId();

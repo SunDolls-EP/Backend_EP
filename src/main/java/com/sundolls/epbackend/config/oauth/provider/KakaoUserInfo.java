@@ -10,7 +10,7 @@ public class KakaoUserInfo implements OAuth2UserInfo{
 
     @Override
     public String getProviderId() {
-        return (String) attributes.get("id");
+        return (String) attributes.get("sub");
     }
 
     @Override
@@ -20,25 +20,17 @@ public class KakaoUserInfo implements OAuth2UserInfo{
 
     @Override
     public String getEmail() {
-        return (String) ((Map)attributes
-                .get("kakao_account"))
-                .get("email");
+        return (String) attributes.get("email");
     }
 
     @Override
     public String getName() {
-        return ((String) ((Map)((Map)attributes
-                .get("kakao_account"))
-                .get("profile"))
-                .get("nickname"));
+        return (String) attributes.get("nickname");
     }
 
     @Override
     public String getProfileUrl() {
-        return ((String) ((Map)((Map)attributes
-                .get("kakao_account"))
-                .get("profile"))
-                .get("profile_image_url"));
+        return (String) attributes.get("picture");
     }
 
 

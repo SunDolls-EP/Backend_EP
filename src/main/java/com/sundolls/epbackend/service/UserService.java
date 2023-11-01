@@ -1,6 +1,7 @@
 package com.sundolls.epbackend.service;
 
 import com.sundolls.epbackend.config.oauth.PrincipalOauth2UserService;
+import com.sundolls.epbackend.config.util.SearchOption;
 import com.sundolls.epbackend.config.util.TagMaker;
 import com.sundolls.epbackend.dto.request.StudyInfoRequest;
 import com.sundolls.epbackend.dto.request.UserPatchRequest;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -237,5 +239,32 @@ public class UserService {
         return ResponseEntity.ok(body);
     }
 
+    public ResponseEntity<List<StudyInfoResponse>> getStudyInfos(User user, SearchOption searchOption) {
+        Calendar cal = Calendar.getInstance();
+
+        List<StudyInfo> studyInfos;
+        if (searchOption == SearchOption.DAY) {
+            LocalDateTime from = LocalDateTime.of(cal.get(Calendar.YEAR),cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+            studyInfos =  studyInfoRepository.findByUserAndCreatedAtBetween(user, from, LocalDateTime.now());
+
+        } else if (searchOption == SearchOption.WEEK) {
+            LocalDateTime from = LocalDateTime.of(cal.get(Calendar.YEAR),cal.get(Calendar.MONTH)+1, cal.getFirstDayOfWeek(), 0, 0, 0);
+            studyInfos =  studyInfoRepository.findByUserAndCreatedAtBetween(user, from, LocalDateTime.now());
+
+        } else if (searchOption == SearchOption.MONTH) {
+            LocalDateTime from = LocalDateTime.of(cal.get(Calendar.YEAR),cal.get(Calendar.MONTH)+1, 1, 0, 0, 0);
+            studyInfos =  studyInfoRepository.findByUserAndCreatedAtBetween(user, from, LocalDateTime.now());
+        } else if (searchOption == SearchOption.YEAR) {
+            LocalDateTime from = LocalDateTime.of(cal.get(Calendar.YEAR),1, 1, 0, 0, 0);
+            studyInfos =  studyInfoRepository.findByUserAndCreatedAtBetween(user, from, LocalDateTime.now());
+        } else {
+            studyInfos = studyInfoRepository.findByUser(user);
+        }
+
+        List<StudyInfoResponse> body = studyInfos.stream().map(studyInfoMapper::toDto).toList();
+        if (body.isEmpty()) return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok(body);
+    }
 
 }

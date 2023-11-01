@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameters;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +44,7 @@ public class QuestionController {
             @Parameter(name = "to", description = "yyyy-mm-dd HH 형식으로 조회할 종료일 (기본값 3000-12-31 23)", required = true)
     })
     public ResponseEntity<Page<QuestionResponse>> getQuestionList(
-            Pageable pageable,
+            @PageableDefault @Parameter(hidden = true) Pageable pageable,
             @RequestParam(name = "title-keyword", required = false) String title,
             @RequestParam(name = "content-keyword", required = false) String content,
             @RequestParam(name = "writer-name", required = false) String writerUsername,
@@ -59,7 +60,7 @@ public class QuestionController {
     @PostMapping("")
     @Operation(summary = "질문 작성")
     public ResponseEntity<QuestionResponse> writeQuestion(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal @Parameter(hidden = true) User user,
             @RequestBody QuestionRequest request
             ) {
         return questionService.writeQuestion(user, request);
@@ -69,7 +70,7 @@ public class QuestionController {
     @Operation(summary = "질문 수정")
     @Parameter(name = "questionId", description = "수정할 질문의 Id", required = true)
     public ResponseEntity<QuestionResponse> updateQuestion(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal @Parameter(hidden = true) User user,
             @PathVariable Long questionId,
             @RequestBody QuestionRequest request
     ){
@@ -80,7 +81,7 @@ public class QuestionController {
     @Operation(summary = "질문 삭제")
     @Parameter(name = "questionId", description = "삭제할 질문의 Id", required = true)
     public ResponseEntity<QuestionResponse> deleteQuestion(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal @Parameter(hidden = true) User user,
             @PathVariable Long questionId
     ){
         return questionService.deleteQuestion(questionId, user);

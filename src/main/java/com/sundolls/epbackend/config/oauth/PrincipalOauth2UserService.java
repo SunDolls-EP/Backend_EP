@@ -93,7 +93,7 @@ public class PrincipalOauth2UserService {
         String profileUrl = oAuth2UserInfo.getProfileUrl();
 
         User user = null;
-        if (userRepository.findByEmail(email).isEmpty()) {
+        if (userRepository.findById(provider + "_" + providerId).isEmpty()) {
              user = User.builder()
                     .id(provider + "_" + providerId)
                     .username(username)
@@ -103,10 +103,8 @@ public class PrincipalOauth2UserService {
                      .profileUrl(profileUrl)
                     .build();
             userRepository.save(user);
-        } else {
-             user = userRepository.findByEmail(email).get();
-            if (!user.getUsername().equals(username))
-                user.update(username, null, TagMaker.makeTag(username, userRepository.findAllByUsernameOrderByTagAsc(username)), profileUrl);
+        } else{
+             user = userRepository.findById(provider + "_" + providerId).get();
         }
         return user;
     }

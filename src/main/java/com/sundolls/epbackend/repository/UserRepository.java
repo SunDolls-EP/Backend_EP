@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, String>, UserRepositoryCustom {
-    public Optional<User> findByEmail(String email);
-    public List<User> findByUsername(String username);
+     Optional<User> findByEmail(String email);
+    List<User> findByUsername(String username);
 
-    public Optional<User> findByUsernameAndTag(String username, String tag);
+    Optional<User> findByUsernameAndTag(String username, String tag);
 
     List<User> findAllByUsernameOrderByTagAsc(String username);
 
@@ -22,4 +22,5 @@ public interface UserRepository extends JpaRepository<User, String>, UserReposit
     )
     List<User> findByRandom(@Param("limit") Integer limit);
 
+    Optional<User> findById(String id);
 }

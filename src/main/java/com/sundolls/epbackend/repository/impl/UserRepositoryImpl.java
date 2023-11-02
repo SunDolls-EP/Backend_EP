@@ -11,6 +11,7 @@ import com.sundolls.epbackend.repository.UserRepositoryCustom;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.sundolls.epbackend.entity.QUser.user;
@@ -21,7 +22,7 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
 
     private final JPAQueryFactory queryFactory;
 
-    public UserRepositoryImpl (JPAQueryFactory queryFactory) {
+    public UserRepositoryImpl(JPAQueryFactory queryFactory) {
         super(QUser.class);
         this.queryFactory = queryFactory;
     }
@@ -35,7 +36,13 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
                 .limit(limitTo50(limit));
 
         List<Tuple> result = query.fetch();
-        List<SchoolRankResponse> responses = result.stream().map(tuple -> new SchoolRankResponse(tuple.get(user.schoolName), tuple.get(user.totalStudyTime.sum().as("totalStudyTime")))).toList();
+        List<SchoolRankResponse> responses = new ArrayList<>(result.stream().map(tuple -> new SchoolRankResponse(tuple.get(user.schoolName), tuple.get(user.totalStudyTime.sum().as("totalStudyTime")))).toList());
+        for (SchoolRankResponse response : responses) {
+            if (response.getName() == null)
+                responses.remove(response);
+        }
+
+
         return responses;
     }
 

@@ -5,6 +5,8 @@ import com.sundolls.epbackend.dto.request.QuestionRequest;
 import com.sundolls.epbackend.dto.response.QuestionResponse;
 import com.sundolls.epbackend.entity.Question;
 import com.sundolls.epbackend.entity.User;
+import com.sundolls.epbackend.execption.CustomException;
+import com.sundolls.epbackend.execption.ErrorCode;
 import com.sundolls.epbackend.mapper.QuestionMapper;
 import com.sundolls.epbackend.repository.QuestionRepository;
 import com.sundolls.epbackend.repository.UserRepository;
@@ -52,29 +54,22 @@ public class QuestionService {
     }
 
     public ResponseEntity<QuestionResponse> getQuestion(Long questionId) {
-        HttpStatus status = HttpStatus.OK;
 
-        Optional<Question> optionalQuestion = questionRepository.findById(questionId);
-        if (optionalQuestion.isEmpty()) {
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
-        }
-        Question question = optionalQuestion.get();
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
 
         QuestionResponse body = questionMapper.toDto(question);
 
-        return new ResponseEntity<>(body, status);
+        return ResponseEntity.ok(body);
     }
 
     public ResponseEntity<QuestionResponse> deleteQuestion(Long questionId, User user) {
 
-        Optional<Question> optionalQuestion = questionRepository.findById(questionId);
-        if (optionalQuestion.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Question question = optionalQuestion.get();
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
+
         if (!user.equals(question.getUser())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new CustomException(ErrorCode.QUESTION_FORBIDDEN);
         }
 
         questionRepository.deleteById(questionId);
@@ -84,13 +79,11 @@ public class QuestionService {
     @Transactional
     public ResponseEntity<QuestionResponse> updateQuestion(Long questionId, User user, QuestionRequest request) {
 
-        Optional<Question> optionalQuestion = questionRepository.findById(questionId);
-        if (optionalQuestion.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Question question = optionalQuestion.get();
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
+
         if (!user.equals(question.getUser())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new CustomException(ErrorCode.QUESTION_FORBIDDEN);
         }
 
         question.update(request.getTitle(), request.getContent());

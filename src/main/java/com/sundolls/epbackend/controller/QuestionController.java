@@ -28,7 +28,7 @@ public class QuestionController {
     @GetMapping("/{questionId}")
     @Operation(summary = "질문 받아오기")
 //    @Parameter(name = "questionId", description = "받아올 질문의 Id", dataTypeClass = Long.class)
-    public ResponseEntity<QuestionResponse> getQuestion(@PathVariable Long questionId) {
+    public ResponseEntity<QuestionResponse> getQuestion(@PathVariable Long questionId) throws Exception {
         return questionService.getQuestion(questionId);
 
     }
@@ -51,7 +51,7 @@ public class QuestionController {
             @RequestParam(name = "writer-tag", required = false) String writerTag,
             @RequestParam(name = "from", defaultValue = "2000-01-01 00")String from,
             @RequestParam(name = "to", defaultValue = "3000-12-31 23")String to
-    ) {
+    ) throws Exception {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
         return questionService.getQuestions(pageable, writerUsername, writerTag, title, content, LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
 
@@ -62,7 +62,7 @@ public class QuestionController {
     public ResponseEntity<QuestionResponse> writeQuestion(
             @AuthenticationPrincipal @Parameter(hidden = true) User user,
             @RequestBody QuestionRequest request
-            ) {
+            ) throws Exception {
         return questionService.writeQuestion(user, request);
     }
 
@@ -73,7 +73,7 @@ public class QuestionController {
             @AuthenticationPrincipal @Parameter(hidden = true) User user,
             @PathVariable Long questionId,
             @RequestBody QuestionRequest request
-    ){
+    ) throws Exception {
         return questionService.updateQuestion(questionId, user, request);
     }
 
@@ -83,7 +83,7 @@ public class QuestionController {
     public ResponseEntity<QuestionResponse> deleteQuestion(
             @AuthenticationPrincipal @Parameter(hidden = true) User user,
             @PathVariable Long questionId
-    ){
+    ) throws Exception {
         return questionService.deleteQuestion(questionId, user);
     }
 

@@ -21,7 +21,7 @@ public class RankController {
 
     @GetMapping("/school/all")
     @Operation(summary = "학교 랭킹")
-    public ResponseEntity<List<SchoolRankResponse>> getSchoolRank(@RequestParam(name = "limit", defaultValue = "15") Integer limit) {
+    public ResponseEntity<List<SchoolRankResponse>> getSchoolRank(@RequestParam(name = "limit", defaultValue = "15") Integer limit) throws Exception {
        return rankService.getSchoolRanking(limit);
     }
 
@@ -30,13 +30,13 @@ public class RankController {
     @Parameter(name = "schoolName", description = "학교 이름", required = true)
     public ResponseEntity<List<UserResponse>> getInSchoolRank(
     @PathVariable(name = "schoolName")String schoolName,
-    @RequestParam(name = "limit", defaultValue = "15") Integer limit) {
+    @RequestParam(name = "limit", defaultValue = "15") Integer limit) throws Exception {
         return rankService.getUserRanking(schoolName, limit);
     }
 
     @GetMapping("")
     @Operation(summary = "개인 랭킹")
-    public ResponseEntity<List<UserResponse>> getPersonalRank(@RequestParam(name = "limit", defaultValue = "15") Integer limit) {
+    public ResponseEntity<List<UserResponse>> getPersonalRank(@RequestParam(name = "limit", defaultValue = "15") Integer limit) throws Exception {
         return rankService.getUserRanking(limit);
     }
 }

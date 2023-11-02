@@ -4,6 +4,8 @@ import com.sundolls.epbackend.dto.request.CalendarRequest;
 import com.sundolls.epbackend.dto.response.CalendarResponse;
 import com.sundolls.epbackend.entity.Calendar;
 import com.sundolls.epbackend.entity.User;
+import com.sundolls.epbackend.execption.CustomException;
+import com.sundolls.epbackend.execption.ErrorCode;
 import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.mapper.CalendarMapper;
 import com.sundolls.epbackend.repository.CalendarRepository;
@@ -29,7 +31,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CalendarService {
     private final CalendarRepository calendarRepository;
-    private final UserRepository userRepository;
     private final CalendarMapper calendarMapper;
 
     public ResponseEntity<List<CalendarResponse>> getCalendarList(User user, LocalDateTime from, LocalDateTime to){
@@ -46,7 +47,7 @@ public class CalendarService {
         LocalDateTime endAt = LocalDateTime.of(LocalDate.now(),LocalTime.of(23,59,59));
 
         if (calendarRepository.existsByUserAndCreatedAtBetween(user, startAt, endAt)){
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            throw new CustomException(ErrorCode.CALENDAR_CONFLICT);
         }
 
         Calendar calendar = Calendar.builder()
@@ -65,11 +66,9 @@ public class CalendarService {
 
         LocalDateTime startAt = LocalDateTime.of(LocalDate.now(), LocalTime.of(0,0,0));
         LocalDateTime endAt = LocalDateTime.of(LocalDate.now(),LocalTime.of(23,59,59));
-        Optional<Calendar> optionalCalendar = calendarRepository.findByUserAndCreatedAtBetween(user,startAt, endAt);
-        if (optionalCalendar.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Calendar calendar = optionalCalendar.get();
+        Calendar calendar = calendarRepository.findByUserAndCreatedAtBetween(user,startAt, endAt)
+                .orElseThrow(() -> new CustomException(ErrorCode.CALENDAR_NOT_FOUND));
+
         calendar.update(request.getContent());
 
         CalendarResponse body = calendarMapper.toDto(calendar);

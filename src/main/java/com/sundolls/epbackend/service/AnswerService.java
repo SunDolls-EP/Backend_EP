@@ -5,6 +5,8 @@ import com.sundolls.epbackend.dto.response.AnswerResponse;
 import com.sundolls.epbackend.entity.Answer;
 import com.sundolls.epbackend.entity.Question;
 import com.sundolls.epbackend.entity.User;
+import com.sundolls.epbackend.execption.CustomException;
+import com.sundolls.epbackend.execption.ErrorCode;
 import com.sundolls.epbackend.mapper.AnswerMapper;
 import com.sundolls.epbackend.repository.AnswerRepository;
 import com.sundolls.epbackend.repository.QuestionRepository;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,7 +36,7 @@ public class AnswerService {
 
         Optional<Question> optionalQuestion = questionRepository.findById(questionId);
         if (optionalQuestion.isEmpty()) {
-            return ResponseEntity.ok().build();
+            throw new CustomException(ErrorCode.QUESTION_NOT_FOUND);
         }
         Question question = optionalQuestion.get();
 
@@ -49,12 +52,10 @@ public class AnswerService {
     }
 
     public ResponseEntity<Page<AnswerResponse>> getAnswers(Long questionId, Pageable pageable){
-        HttpStatus status = HttpStatus.OK;
 
         Optional<Question> optionalQuestion = questionRepository.findById(questionId);
         if (optionalQuestion.isEmpty()) {
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
+            throw new CustomException(ErrorCode.QUESTION_NOT_FOUND);
         }
         Question question = optionalQuestion.get();
 
@@ -62,22 +63,20 @@ public class AnswerService {
 
         Page<AnswerResponse> body = answers.map(answerMapper::toDto);
 
-        return new ResponseEntity<>(body, status);
+        return ResponseEntity.ok(body);
 
     }
 
     public ResponseEntity<AnswerResponse> updateAnswer(Long answerId, User user, AnswerRequest request) {
 
-        Optional<Answer> optionalAnswer = answerRepository.findById(answerId);
-        if (optionalAnswer.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Answer answer = optionalAnswer.get();
+        Answer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ANSWER_NOT_FOUND));
 
-        User answerWriter = userRepository.findById(answer.getUser().getId()).get();
+        User answerWriter = userRepository.findById(answer.getUser().getId())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         if (!user.equals(answerWriter)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new CustomException(ErrorCode.ANSWER_FORBIDDEN);
         }
 
         answer.update(request.getContent());
@@ -88,16 +87,14 @@ public class AnswerService {
     }
 
     public ResponseEntity<AnswerResponse> deleteAnswer(Long answerId, User user) {
-        Optional<Answer> optionalAnswer = answerRepository.findById(answerId);
-        if (optionalAnswer.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Answer answer = optionalAnswer.get();
+        Answer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ANSWER_NOT_FOUND));
 
-        User answerWriter = userRepository.findById(answer.getUser().getId()).get();
+        User answerWriter = userRepository.findById(answer.getUser().getId())
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         if (!user.equals(answerWriter)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new CustomException(ErrorCode.ANSWER_FORBIDDEN);
         }
 
         answerRepository.delete(answer);

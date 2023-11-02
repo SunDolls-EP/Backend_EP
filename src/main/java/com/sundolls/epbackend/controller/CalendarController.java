@@ -33,7 +33,7 @@ public class CalendarController {
     public ResponseEntity<List<CalendarResponse>> getCalendar(
             @AuthenticationPrincipal @Parameter(hidden = true) User user,
             @RequestParam(defaultValue = "2000-01-01 00") String from,
-            @RequestParam(defaultValue = "3000-12-31 23") String to){
+            @RequestParam(defaultValue = "3000-12-31 23") String to) throws Exception {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
 
         return calendarService.getCalendarList(user, LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
@@ -45,7 +45,7 @@ public class CalendarController {
     @Operation(summary = "캘린더 작성하기")
     public ResponseEntity<CalendarResponse> writeCalendar(
             @AuthenticationPrincipal @Parameter(hidden = true) User user,
-            @RequestBody CalendarRequest request) {
+            @RequestBody CalendarRequest request) throws Exception {
 
         return calendarService.writeCalendar(user, request);
 
@@ -56,7 +56,7 @@ public class CalendarController {
     @Operation(summary = "캘린더 수정하기")
     public ResponseEntity<CalendarResponse> updateCalendar(
             @AuthenticationPrincipal @Parameter(hidden = true) User user,
-            @RequestBody CalendarRequest request){
+            @RequestBody CalendarRequest request) throws Exception {
         return calendarService.updateCalendar(user, request);
 
 

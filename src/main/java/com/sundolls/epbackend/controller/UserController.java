@@ -30,13 +30,12 @@ import java.util.List;
 @RequestMapping("api/user")
 public class UserController {
     private final UserService userService;
-    private final JwtProvider jwtProvider;
 
     @GetMapping("/random/list")
     @Operation(summary = "유저 랜덤 리스트")
     public ResponseEntity<List<UserResponse>> getRandomUserList(
             @RequestParam(name = "limit", defaultValue = "10") Integer limit
-    ) {
+    ) throws Exception {
         return userService.getRandomUserList(limit);
     }
 
@@ -44,7 +43,7 @@ public class UserController {
     @Operation(summary = "유저 정보 수정")
     public ResponseEntity<UserResponse> updateUserInfo(
             @AuthenticationPrincipal @Parameter(hidden = true) User user,
-            @RequestBody UserPatchRequest request){
+            @RequestBody UserPatchRequest request) throws Exception {
         return userService.updateUser(request, user);
     }
 
@@ -52,7 +51,7 @@ public class UserController {
 
     @GetMapping("/{username}")
     @Operation(summary = "이름으로 유저 찾기")
-    public ResponseEntity<List<UserResponse>> findUser(@PathVariable String username){
+    public ResponseEntity<List<UserResponse>> findUser(@PathVariable String username) throws Exception {
         return userService.findUser(username);
    }
 
@@ -61,7 +60,7 @@ public class UserController {
     public ResponseEntity<UserResponse> findUser(
             @PathVariable String username,
             @PathVariable String tag
-            ){
+            ) throws Exception {
         return userService.findUser(username, tag);
     }
 
@@ -75,14 +74,14 @@ public class UserController {
    public ResponseEntity<UserResponse> requestFriend(
            @AuthenticationPrincipal @Parameter(hidden = true) User user,
            @PathVariable String username,
-           @PathVariable String tag) {
+           @PathVariable String tag) throws Exception {
         return userService.requestFriend(username, tag, user);
    }
 
    @GetMapping("/friend")
    @Operation(summary = "친구 리스트 가져오기")
    public ResponseEntity<List<FriendResponse>> getFriends(
-           @AuthenticationPrincipal @Parameter(hidden = true) User user) {
+           @AuthenticationPrincipal @Parameter(hidden = true) User user) throws Exception {
         return userService.getFriendList(user);
    }
 
@@ -95,7 +94,7 @@ public class UserController {
    public ResponseEntity<FriendResponse> deleteFriend(
            @AuthenticationPrincipal @Parameter(hidden = true) User user,
            @PathVariable String username,
-           @PathVariable String tag) {
+           @PathVariable String tag) throws Exception {
         return userService.deleteFriend(username, tag, user);
    }
 
@@ -108,7 +107,7 @@ public class UserController {
    public ResponseEntity<FriendResponse> acceptFriend(
            @AuthenticationPrincipal @Parameter(hidden = true) User user,
            @PathVariable String username,
-           @PathVariable String tag) {
+           @PathVariable String tag) throws Exception {
         return userService.acceptFriend(username, tag, user);
    }
 
@@ -117,7 +116,7 @@ public class UserController {
     public ResponseEntity<Void> postStudy(
            @AuthenticationPrincipal @Parameter(hidden = true) User user,
            @RequestBody StudyInfoRequest request
-           ) {
+           ) throws Exception {
         return userService.makeStudyInfo(user, request);
    }
 
@@ -130,7 +129,7 @@ public class UserController {
    public ResponseEntity<List<StudyInfoResponse>> getStudyInfo(
            @AuthenticationPrincipal @Parameter(hidden = true) User user,
            @RequestParam(defaultValue = "2000-01-01 00") String from,
-           @RequestParam(defaultValue = "3000-12-31 23") String to) {
+           @RequestParam(defaultValue = "3000-12-31 23") String to) throws Exception {
        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH");
        return userService.getStudyInfos(user, LocalDateTime.parse(from, formatter), LocalDateTime.parse(to, formatter));
    }
@@ -142,7 +141,7 @@ public class UserController {
     })
     public ResponseEntity<List<StudyInfoResponse>> getStudyInfo(
             @AuthenticationPrincipal @Parameter(hidden = true) User user,
-            @RequestParam(name = "option") String  option) {
+            @RequestParam(name = "option") String  option) throws Exception {
         return userService.getStudyInfos(user, SearchOption.valueOf(option));
     }
 

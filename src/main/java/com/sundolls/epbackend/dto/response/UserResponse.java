@@ -24,7 +24,7 @@ public class UserResponse {
     @Schema(description = "총 공부 시간", defaultValue = "총 공부 시간")
     private Integer totalStudyTime;
 
-    @Schema(description = "프로필 사진 URL", defaultValue = "프로필 사진 URL")
+    @Schema(description = "프로필 사진 URL", defaultValue = "http://k.kakaocdn.net/dn/DYFZ7/btsyYoGRFYx/bUK6RRbTj3lCLNFd5WdqYK/img_110x110.jpg")
     private String profileUrl;
 
     @Schema(description = "생성일", defaultValue = "2023-12-13T17:17:49")

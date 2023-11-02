@@ -8,6 +8,8 @@ import com.sundolls.epbackend.config.oauth.provider.KakaoUserInfo;
 import com.sundolls.epbackend.config.oauth.provider.OAuth2UserInfo;
 import com.sundolls.epbackend.config.util.TagMaker;
 import com.sundolls.epbackend.entity.User;
+import com.sundolls.epbackend.execption.CustomException;
+import com.sundolls.epbackend.execption.ErrorCode;
 import com.sundolls.epbackend.repository.UserRepository;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -47,7 +49,7 @@ public class PrincipalOauth2UserService {
     String kakaoNonce;
 
 
-    public User loadUser(String provider, String idTokenString) {
+    public User loadUser(String provider, String idTokenString) throws Exception{
         OAuth2UserInfo oAuth2UserInfo = null;
 
 
@@ -72,19 +74,14 @@ public class PrincipalOauth2UserService {
             ) {
                 oAuth2UserInfo = new KakaoUserInfo(kakaoPayload);
             } else {
-                throw new OAuth2AuthenticationException("kakao Id Token validation failed.");
+                throw new CustomException(ErrorCode.LOGIN_FAIL);
             }
 
         } else if (provider.equals("google")) {
-            try {
-
-                GoogleIdToken idToken = googleIdTokenVerifier.verify(idTokenString);
-                oAuth2UserInfo = new GoogleUserInfo(idToken.getPayload());
-            } catch (GeneralSecurityException | IOException e) {
-            }
-
+            GoogleIdToken idToken = googleIdTokenVerifier.verify(idTokenString);
+            oAuth2UserInfo = new GoogleUserInfo(idToken.getPayload());
         } else {
-            throw new OAuth2AuthenticationException("unknown oauth provider.");
+            throw new CustomException(ErrorCode.LOGIN_FAIL);
         }
 
         String providerId = oAuth2UserInfo.getProviderId();

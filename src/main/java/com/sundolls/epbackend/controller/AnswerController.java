@@ -32,7 +32,7 @@ public class AnswerController {
             @AuthenticationPrincipal @Parameter(hidden = true) User user,
             @RequestBody AnswerRequest request,
             @PathVariable(name = "questionId") Long questionId
-            ){
+            ) throws Exception {
         return answerService.postAnswer(questionId, user, request);
     }
 
@@ -42,7 +42,7 @@ public class AnswerController {
     public ResponseEntity<Page<AnswerResponse>> getAnswers(
             @PathVariable(name = "questionId") Long questionId,
             @PageableDefault @Parameter(hidden = true) Pageable pageable
-    ) {
+    ) throws Exception {
         return answerService.getAnswers(questionId, pageable);
     }
 
@@ -53,7 +53,7 @@ public class AnswerController {
             @AuthenticationPrincipal @Parameter(hidden = true) User user,
             @RequestBody AnswerRequest request,
             @PathVariable(name = "answerId") Long answerId
-    ) {
+    ) throws Exception {
         return answerService.updateAnswer(answerId, user, request);
     }
 
@@ -63,7 +63,7 @@ public class AnswerController {
     public ResponseEntity<AnswerResponse> deleteAnswer(
             @AuthenticationPrincipal @Parameter(hidden = true) User user,
             @PathVariable(name = "answerId") Long answerId
-    ) {
+    ) throws Exception {
         return answerService.deleteAnswer(answerId, user);
     }
 }

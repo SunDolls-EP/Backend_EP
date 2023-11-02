@@ -12,6 +12,8 @@ import com.sundolls.epbackend.entity.Friend;
 import com.sundolls.epbackend.entity.StudyInfo;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.entity.primaryKey.FriendId;
+import com.sundolls.epbackend.execption.CustomException;
+import com.sundolls.epbackend.execption.ErrorCode;
 import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.mapper.FriendMapper;
 import com.sundolls.epbackend.mapper.StudyInfoMapper;
@@ -54,8 +56,7 @@ public class UserService {
         try {
             user = principalOauth2UserService.loadUser(provider, tokenString);
         } catch (Exception e) {
-            status = HttpStatus.UNAUTHORIZED;
-            return new ResponseEntity<>(status);
+            throw new CustomException(ErrorCode.LOGIN_FAIL);
         }
 
         HttpHeaders headers = new HttpHeaders();
@@ -69,7 +70,7 @@ public class UserService {
 
     public ResponseEntity<UserResponse> refreshLogin(String refreshTokenString) {
         Optional<User> optionalUser =  userRepository.findByEmail(jwtProvider.getPayload(refreshTokenString).getBody().getSubject());
-        if (optionalUser.isEmpty() || jwtProvider.validateToken(refreshTokenString)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (optionalUser.isEmpty() || jwtProvider.validateToken(refreshTokenString)) throw new CustomException(ErrorCode.LOGIN_FAIL);
         User user = optionalUser.get();
 
         HttpHeaders headers = new HttpHeaders();
@@ -110,8 +111,7 @@ public class UserService {
 
         List<User> userList = userRepository.findByUsername(username);
         if(userList.isEmpty()){
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
         List<UserResponse> body = userList.stream().map(userMapper::toDto).toList();
         return new ResponseEntity<>(body, status);
@@ -120,23 +120,16 @@ public class UserService {
     public ResponseEntity<UserResponse> findUser(String username, String tag) {
         HttpStatus status = HttpStatus.OK;
 
-        Optional<User> optionalUser = userRepository.findByUsernameAndTag(username, tag);
-        if(optionalUser.isEmpty()){
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
-        }
-        UserResponse body = userMapper.toDto(optionalUser.get());
+        User user = userRepository.findByUsernameAndTag(username, tag)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        UserResponse body = userMapper.toDto(user);
         return new ResponseEntity<>(body, status);
     }
 
     public ResponseEntity<UserResponse> requestFriend(String targetUsername,String targetTag ,User requesterUser){
 
-        Optional<User> optionalUser = userRepository.findByUsernameAndTag(targetUsername, targetTag);
-        if (optionalUser.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        User targetUser = optionalUser.get();
-
+        User targetUser = userRepository.findByUsernameAndTag(targetUsername, targetTag)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         FriendId friendId = new FriendId();
         friendId.setUserId(requesterUser.getId());
@@ -172,16 +165,13 @@ public class UserService {
     }
 
     public ResponseEntity<FriendResponse> deleteFriend(String username, String tag, User user){
-        User targetUser = userRepository.findByUsernameAndTag(username, tag).get();
+        User targetUser = userRepository.findByUsernameAndTag(username, tag)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        Optional<Friend> optionalFriend = friendRepository.findByUserAndTargetUser(user, targetUser);
-        if (optionalFriend.isEmpty()){
-            optionalFriend = friendRepository.findByUserAndTargetUser(targetUser, user);
-        }
-        if (optionalFriend.isEmpty()){
-            return ResponseEntity.notFound().build();
-        }
-        Friend friend = optionalFriend.get();
+        Friend friend = friendRepository.findByUserAndTargetUser(user, targetUser)
+                .orElse(friendRepository.findByUserAndTargetUser(targetUser, user)
+                        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND))
+                );
 
         FriendResponse body = friendMapper.toDto(friend, user);
 
@@ -192,19 +182,16 @@ public class UserService {
     }
 
     public ResponseEntity<FriendResponse> acceptFriend(String username, String tag, User user){
-        User targetUser = userRepository.findByUsernameAndTag(username, tag).get();
+        User targetUser = userRepository.findByUsernameAndTag(username, tag)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        Optional<Friend> optionalFriend = friendRepository.findByUserAndTargetUser(user, targetUser);
-        if (optionalFriend.isEmpty()){
-            optionalFriend = friendRepository.findByUserAndTargetUser(targetUser, user);
-        }
-        if (optionalFriend.isEmpty()){
-            return ResponseEntity.notFound().build();
-        }
-        Friend friend = optionalFriend.get();
+        Friend friend = friendRepository.findByUserAndTargetUser(user, targetUser)
+                .orElse(friendRepository.findByUserAndTargetUser(targetUser, user)
+                        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND))
+                );
 
         if (! friend.getTargetUser().equals(user)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new CustomException(ErrorCode.FRIEND_FORBIDDEN);
         }
 
         friend.accept();
@@ -234,7 +221,7 @@ public class UserService {
 
         List<StudyInfo> studyInfos =  studyInfoRepository.findByUserAndCreatedAtBetween(user, from, to);
         List<StudyInfoResponse> body = studyInfos.stream().map(studyInfoMapper::toDto).toList();
-        if (body.isEmpty()) return ResponseEntity.notFound().build();
+        if (body.isEmpty()) throw new CustomException(ErrorCode.STUDY_INFO_NOT_FOUND);
 
         return ResponseEntity.ok(body);
     }
@@ -262,7 +249,7 @@ public class UserService {
         }
 
         List<StudyInfoResponse> body = studyInfos.stream().map(studyInfoMapper::toDto).toList();
-        if (body.isEmpty()) return ResponseEntity.notFound().build();
+        if (body.isEmpty()) throw new CustomException(ErrorCode.STUDY_INFO_NOT_FOUND);
 
         return ResponseEntity.ok(body);
     }

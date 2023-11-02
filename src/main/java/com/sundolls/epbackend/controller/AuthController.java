@@ -23,7 +23,7 @@ public class AuthController {
     @Parameter(name = "provider", description = "Oauth2 프로바이더 (google, kakao)", required = true)
     public ResponseEntity<UserResponse> oauthLogin(
             @PathVariable(name = "provider") String provider,
-            @RequestHeader(name = "Authorization")String idTokenString) {
+            @RequestHeader(name = "Authorization")String idTokenString) throws Exception {
 
         return userService.oauthLogin(provider, idTokenString);
     }
@@ -31,7 +31,7 @@ public class AuthController {
     @GetMapping("/login/refresh")
     @Operation(summary = "refresh token으로 access token 재발급")
     public ResponseEntity<UserResponse> refreshLogin(
-            @RequestHeader(name = "Authorization")String refreshTokenString) {
+            @RequestHeader(name = "Authorization")String refreshTokenString) throws Exception {
 
         return userService.refreshLogin(refreshTokenString);
     }

@@ -39,6 +39,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class UserService {
     private final UserRepository userRepository;
     private final FriendRepository friendRepository;
@@ -62,7 +63,7 @@ public class UserService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization",jwtProvider.generateAccessToken(user.getUsername(), user.getTag()));
         headers.set("Refresh", jwtProvider.generateRefreshToken(user.getEmail()));
-        UserResponse body = userMapper.toDto(user);
+        UserResponse body = userMapper.toDto(userRepository.findByEmail(user.getEmail()).orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAIL)));
 
         return new ResponseEntity<>(body, headers, status);
 

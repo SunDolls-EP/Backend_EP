@@ -43,15 +43,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private String clientId;
     @Value("${spring.security.oauth2.client.registration.google.ios-client-id}")
     private String iosClientId;
-    @Value("${spring.security.oauth2.client.registration.google.android-client-id}")
-    private String androidClientId;
+//    @Value("${spring.security.oauth2.client.registration.google.android-client-id}")
+//    private String androidClientId;
 
 
     @Bean
     public GoogleIdTokenVerifier googleIdTokenVerifier(){
         return new GoogleIdTokenVerifier.Builder(new NetHttpTransport(),
                         new GsonFactory())
-                .setAudience(Arrays.asList(clientId, iosClientId, androidClientId))
+                .setAudience(Arrays.asList(clientId, iosClientId))
                 .build();
     }
 
@@ -72,7 +72,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
                 .antMatchers(SWAGGER_PATH)
-                .antMatchers("/api/auth/**");
+                .antMatchers("/api/auth/**")
+                .antMatchers(AUTH_FREE_PATH);
     }
 
     @Override
@@ -85,8 +86,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .formLogin().disable()
                 .httpBasic().disable()
                 .cors().disable()
-                .authorizeRequests()
-                .antMatchers(AUTH_FREE_PATH).permitAll()
+                .authorizeRequests().anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, principalDetailsService), UsernamePasswordAuthenticationFilter.class)
         ;

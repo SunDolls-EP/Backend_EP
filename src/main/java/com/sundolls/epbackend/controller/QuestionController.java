@@ -34,7 +34,7 @@ public class QuestionController {
     }
 
     @GetMapping("/list")
-    @Operation(summary = "질문 리스트로 받아오기")
+    @Operation(summary = "질문 리스트로 받아오기 (내용은 null)")
     @Parameters({
             @Parameter(name = "title", description = "질문의 제목에 포함될 키워드 (필수X)", required = false),
             @Parameter(name = "content", description = "질문의 내용에 포함될 키워드 (필수X)",  required = false),

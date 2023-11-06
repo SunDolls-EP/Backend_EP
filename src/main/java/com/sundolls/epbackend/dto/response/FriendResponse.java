@@ -1,5 +1,6 @@
 package com.sundolls.epbackend.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,8 @@ import java.time.LocalDateTime;
 @ToString
 
 public class FriendResponse extends UserResponse{
+
+    @Schema(description = "수락 여부", defaultValue = "true")
     private boolean accepted;
 
     public FriendResponse(){

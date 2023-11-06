@@ -5,6 +5,8 @@ import com.sundolls.epbackend.dto.request.QuestionRequest;
 import com.sundolls.epbackend.dto.response.QuestionResponse;
 import com.sundolls.epbackend.entity.Question;
 import com.sundolls.epbackend.entity.User;
+import com.sundolls.epbackend.execption.CustomException;
+import com.sundolls.epbackend.execption.ErrorCode;
 import com.sundolls.epbackend.mapper.QuestionMapper;
 import com.sundolls.epbackend.repository.QuestionRepository;
 import com.sundolls.epbackend.repository.UserRepository;
@@ -28,13 +30,10 @@ public class QuestionService {
     private final UserRepository userRepository;
     private final QuestionMapper questionMapper;
 
-    public ResponseEntity<QuestionResponse> writeQuestion(Jws<Claims> payload, QuestionRequest request) {
-        HttpStatus status = HttpStatus.OK;
-
-        User writer = getUser(payload);
+    public ResponseEntity<QuestionResponse> writeQuestion(User user, QuestionRequest request) {
 
         Question question = Question.builder()
-                .user(writer)
+                .user(user)
                 .title(request.getTitle())
                 .content(request.getContent())
                 .build();
@@ -42,7 +41,7 @@ public class QuestionService {
 
         QuestionResponse body = questionMapper.toDto(question);
 
-        return new ResponseEntity<>(body, status);
+        return ResponseEntity.ok(body);
     }
 
     public ResponseEntity<Page<QuestionResponse>> getQuestions(Pageable pageable, String username, String tag, String title, String content, LocalDateTime from, LocalDateTime to) {
@@ -55,69 +54,40 @@ public class QuestionService {
     }
 
     public ResponseEntity<QuestionResponse> getQuestion(Long questionId) {
-        HttpStatus status = HttpStatus.OK;
 
-        Optional<Question> optionalQuestion = questionRepository.findById(questionId);
-        if (optionalQuestion.isEmpty()) {
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
-        }
-        Question question = optionalQuestion.get();
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
 
         QuestionResponse body = questionMapper.toDto(question);
 
-        return new ResponseEntity<>(body, status);
+        return ResponseEntity.ok(body);
     }
 
-    public ResponseEntity<QuestionResponse> deleteQuestion(Long questionId, Jws<Claims> payload) {
-        HttpStatus status = HttpStatus.OK;
+    public ResponseEntity<QuestionResponse> deleteQuestion(Long questionId, User user) {
 
-        User user = getUser(payload);
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
 
-        Optional<Question> optionalQuestion = questionRepository.findById(questionId);
-        if (optionalQuestion.isEmpty()) {
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
-        }
-        Question question = optionalQuestion.get();
         if (!user.equals(question.getUser())) {
-            status = HttpStatus.FORBIDDEN;
-            return new ResponseEntity<>(status);
+            throw new CustomException(ErrorCode.QUESTION_FORBIDDEN);
         }
 
         questionRepository.deleteById(questionId);
 
-        return new ResponseEntity<>(questionMapper.toDto(question), status);
+        return ResponseEntity.ok(questionMapper.toDto(question));
     }
     @Transactional
-    public ResponseEntity<QuestionResponse> updateQuestion(Long questionId, Jws<Claims> payload, QuestionRequest request) {
-        HttpStatus status = HttpStatus.OK;
+    public ResponseEntity<QuestionResponse> updateQuestion(Long questionId, User user, QuestionRequest request) {
 
-        User user = getUser(payload);
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.QUESTION_NOT_FOUND));
 
-        Optional<Question> optionalQuestion = questionRepository.findById(questionId);
-        if (optionalQuestion.isEmpty()) {
-            status = HttpStatus.NOT_FOUND;
-            return new ResponseEntity<>(status);
-        }
-        Question question = optionalQuestion.get();
         if (!user.equals(question.getUser())) {
-            status = HttpStatus.FORBIDDEN;
-            return new ResponseEntity<>(status);
+            throw new CustomException(ErrorCode.QUESTION_FORBIDDEN);
         }
 
         question.update(request.getTitle(), request.getContent());
 
-        return new ResponseEntity<>(questionMapper.toDto(question), status);
+        return ResponseEntity.ok(questionMapper.toDto(question));
     }
-
-    private User getUser(Jws<Claims> payload){
-        Optional<User> optionalUser = userRepository.findByUsernameAndTag((String) payload.getBody().get("username"), (String) payload.getBody().get("tag"));
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-        return optionalUser.get();
-    }
-
-
 }

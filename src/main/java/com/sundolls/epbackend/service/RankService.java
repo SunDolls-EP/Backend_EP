@@ -19,7 +19,7 @@ public class RankService {
     private final UserRepository userRepository;
 
     //학교 랭킹, 캐싱, 10개
-    @Cacheable(cacheNames = "schoolRank")
+//    @Cacheable(cacheNames = "schoolRank")
     public ResponseEntity<List<SchoolRankResponse>> getSchoolRanking(Integer limit) {
         List<SchoolRankResponse> response = userRepository.getSchoolRank(limit);
         return ResponseEntity.ok(response);
@@ -32,13 +32,13 @@ public class RankService {
     }
 
     //랭킹, 캐싱, 50명
-    @Cacheable(cacheNames ="personalRank")
+//    @Cacheable(cacheNames ="personalRank")
     public ResponseEntity<List<UserResponse>> getUserRanking(Integer limit){
         List<UserResponse> response = userRepository.getPersonalRank(limit);
         return ResponseEntity.ok(response);
     }
 
-    @CacheEvict(cacheNames = {"schoolRank","personalRank"})
+//    @CacheEvict(cacheNames = {"schoolRank","personalRank"})
     public void deleteAllCache() {
 
     }

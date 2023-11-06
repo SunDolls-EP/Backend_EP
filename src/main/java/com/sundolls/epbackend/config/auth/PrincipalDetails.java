@@ -8,31 +8,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Collection;
-import java.util.Map;
 
 
 @RequiredArgsConstructor
-public class PrincipalDetails implements UserDetails, OAuth2User {
+public class PrincipalDetails implements UserDetails {
     private User user;
-    private Map<String, Object> attributes;
-
-    public PrincipalDetails(User user, Map<String, Object> attributes) {
-        this.user = user;
-        this.attributes = attributes;
-    }
 
     public PrincipalDetails(User user) {
         this.user = user;
-    }
-
-    public PrincipalDetails(Map<String, Object> attributes) {
-        this.attributes = attributes;
-    }
-
-
-    @Override
-    public Map<String, Object> getAttributes() {
-        return attributes;
     }
 
     @Override
@@ -70,8 +53,7 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         return true;
     }
 
-    @Override
-    public String getName() {
-        return null;
+    public User getUser(){
+        return user;
     }
 }

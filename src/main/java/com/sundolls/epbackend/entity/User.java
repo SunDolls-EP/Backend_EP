@@ -51,6 +51,20 @@ public class User extends BaseTimeEntity {
         return this.id.equals(user.getId());
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", username='" + username + '\'' +
+                ", tag='" + tag + '\'' +
+                ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", schoolName='" + schoolName + '\'' +
+                ", totalStudyTime=" + totalStudyTime +
+                ", profileUrl='" + profileUrl + '\'' +
+                '}';
+    }
+
     public void update(String username, String schoolName, String tag, String profileUrl){
         if(username!=null)
             this.username = username;

@@ -12,6 +12,7 @@ public class UserMapperImpl implements UserMapper {
         UserResponse userResponse = new UserResponse();
         userResponse.setUsername(entity.getUsername());
         userResponse.setTag(entity.getTag());
+        userResponse.setSchoolName(entity.getSchoolName());
         userResponse.setTotalStudyTime(entity.getTotalStudyTime());
         userResponse.setProfileUrl(entity.getProfileUrl());
         userResponse.setCreatedAt(entity.getCreatedAt());

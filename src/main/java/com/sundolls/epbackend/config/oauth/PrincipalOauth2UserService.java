@@ -100,6 +100,7 @@ public class PrincipalOauth2UserService {
                      .profileUrl(profileUrl)
                     .build();
             userRepository.save(user);
+            //log.info(username);
         } else{
              user = userRepository.findById(provider + "_" + providerId).get();
         }

@@ -6,15 +6,10 @@ import com.sundolls.epbackend.entity.Calendar;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.execption.CustomException;
 import com.sundolls.epbackend.execption.ErrorCode;
-import com.sundolls.epbackend.filter.JwtProvider;
 import com.sundolls.epbackend.mapper.CalendarMapper;
 import com.sundolls.epbackend.repository.CalendarRepository;
-import com.sundolls.epbackend.repository.UserRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,19 +19,17 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class CalendarService {
     private final CalendarRepository calendarRepository;
-    private final CalendarMapper calendarMapper;
 
     public ResponseEntity<List<CalendarResponse>> getCalendarList(User user, LocalDateTime from, LocalDateTime to){
 
         ArrayList<Calendar> calendarArrayList = calendarRepository.findByCreatedAtBetweenAndUser(from, to, user);
-        List<CalendarResponse> body = calendarArrayList.stream().map(calendarMapper::toDto).toList();
+        List<CalendarResponse> body = calendarArrayList.stream().map(CalendarMapper::toDto).toList();
 
         return ResponseEntity.ok(body);
     }
@@ -56,7 +49,7 @@ public class CalendarService {
                 .build();
         calendarRepository.save(calendar);
 
-        CalendarResponse body = calendarMapper.toDto(calendar);
+        CalendarResponse body = CalendarMapper.toDto(calendar);
 
         return ResponseEntity.ok(body);
     }
@@ -71,7 +64,7 @@ public class CalendarService {
 
         calendar.update(request.getContent());
 
-        CalendarResponse body = calendarMapper.toDto(calendar);
+        CalendarResponse body = CalendarMapper.toDto(calendar);
 
         return ResponseEntity.ok(body);
     }

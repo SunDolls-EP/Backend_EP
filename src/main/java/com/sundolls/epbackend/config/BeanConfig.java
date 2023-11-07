@@ -35,7 +35,5 @@ public class BeanConfig {
     JwtProvider jwtProvider(){return new JwtProvider();}
     @Bean
     public JPAQueryFactory jpaQueryFactory(){return new JPAQueryFactory(entityManager);}
-    @Bean
-    public RestTemplate restTemplate() {return new RestTemplate();}
 
 }

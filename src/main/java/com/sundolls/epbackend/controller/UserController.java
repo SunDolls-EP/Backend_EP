@@ -9,6 +9,7 @@ import com.sundolls.epbackend.dto.response.StudyInfoResponse;
 import com.sundolls.epbackend.dto.response.UserResponse;
 import com.sundolls.epbackend.entity.User;
 import com.sundolls.epbackend.filter.JwtProvider;
+import com.sundolls.epbackend.mapper.UserMapper;
 import com.sundolls.epbackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -62,6 +63,12 @@ public class UserController {
             @PathVariable String tag
             ) throws Exception {
         return userService.findUser(username, tag);
+    }
+
+    @GetMapping("/self")
+    @Operation(summary = "자신의 정보 가져오기")
+    public ResponseEntity<UserResponse> findUser(@AuthenticationPrincipal @Parameter(hidden = true) User user) {
+        return ResponseEntity.ok(UserMapper.toDto(user));
     }
 
 

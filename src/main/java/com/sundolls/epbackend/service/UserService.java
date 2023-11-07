@@ -21,8 +21,6 @@ import com.sundolls.epbackend.mapper.UserMapper;
 import com.sundolls.epbackend.repository.FriendRepository;
 import com.sundolls.epbackend.repository.StudyInfoRepository;
 import com.sundolls.epbackend.repository.UserRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -46,10 +44,6 @@ public class UserService {
     private final PrincipalOauth2UserService principalOauth2UserService;
     private final StudyInfoRepository studyInfoRepository;
     private final JwtProvider jwtProvider;
-    private final FriendMapper friendMapper;
-    private final StudyInfoMapper studyInfoMapper;
-    private final UserMapper userMapper;
-
     public ResponseEntity<UserResponse> oauthLogin(String provider, String  tokenString) {
         HttpStatus status = HttpStatus.OK;
 
@@ -63,7 +57,7 @@ public class UserService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization",jwtProvider.generateAccessToken(user.getUsername(), user.getTag()));
         headers.set("Refresh", jwtProvider.generateRefreshToken(user.getEmail()));
-        UserResponse body = userMapper.toDto(userRepository.findByEmail(user.getEmail()).orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAIL)));
+        UserResponse body = UserMapper.toDto(userRepository.findByEmail(user.getEmail()).orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAIL)));
 
         return new ResponseEntity<>(body, headers, status);
 
@@ -76,13 +70,13 @@ public class UserService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization",jwtProvider.generateAccessToken(user.getUsername(), user.getTag()));
-        UserResponse body = userMapper.toDto(user);
+        UserResponse body = UserMapper.toDto(user);
 
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body(body);
     }
 
     public ResponseEntity<List<UserResponse>> getRandomUserList(Integer limit) {
-        return ResponseEntity.ok(userRepository.findByRandom(limit).stream().map(userMapper::toDto).toList());
+        return ResponseEntity.ok(userRepository.findByRandom(limit).stream().map(UserMapper::toDto).toList());
     }
 
 
@@ -96,7 +90,7 @@ public class UserService {
                 ,null
         );
 
-        UserResponse body = userMapper.toDto(user);
+        UserResponse body = UserMapper.toDto(user);
         if (request.getUsername() != null) {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization",jwtProvider.generateAccessToken(user.getUsername(), user.getTag()));
@@ -114,7 +108,7 @@ public class UserService {
         if(userList.isEmpty()){
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
-        List<UserResponse> body = userList.stream().map(userMapper::toDto).toList();
+        List<UserResponse> body = userList.stream().map(UserMapper::toDto).toList();
         return new ResponseEntity<>(body, status);
     }
 
@@ -123,7 +117,7 @@ public class UserService {
 
         User user = userRepository.findByUsernameAndTag(username, tag)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        UserResponse body = userMapper.toDto(user);
+        UserResponse body = UserMapper.toDto(user);
         return new ResponseEntity<>(body, status);
     }
 
@@ -144,7 +138,7 @@ public class UserService {
                 .build();
         friendRepository.save(friend);
 
-        UserResponse body = userMapper.toDto(targetUser);
+        UserResponse body = UserMapper.toDto(targetUser);
 
         return ResponseEntity.ok(body);
 
@@ -159,7 +153,7 @@ public class UserService {
 
         log.info(friends.toString());
 
-        List<FriendResponse> body = friends.stream().map( friend -> friendMapper.toDto(friend, user)  ).toList();
+        List<FriendResponse> body = friends.stream().map( friend -> FriendMapper.toDto(friend, user)  ).toList();
 
         return ResponseEntity.ok(body);
 
@@ -174,7 +168,7 @@ public class UserService {
                         .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND))
                 );
 
-        FriendResponse body = friendMapper.toDto(friend, user);
+        FriendResponse body = FriendMapper.toDto(friend, user);
 
         friendRepository.delete(friend);
 
@@ -198,7 +192,7 @@ public class UserService {
         friend.accept();
         friendRepository.save(friend);
 
-        FriendResponse body = friendMapper.toDto(friend, user);
+        FriendResponse body = FriendMapper.toDto(friend, user);
 
         return ResponseEntity.ok(body);
     }
@@ -221,7 +215,7 @@ public class UserService {
     public ResponseEntity<List<StudyInfoResponse>> getStudyInfos(User user, LocalDateTime from, LocalDateTime to) {
 
         List<StudyInfo> studyInfos =  studyInfoRepository.findByUserAndCreatedAtBetween(user, from, to);
-        List<StudyInfoResponse> body = studyInfos.stream().map(studyInfoMapper::toDto).toList();
+        List<StudyInfoResponse> body = studyInfos.stream().map(StudyInfoMapper::toDto).toList();
         if (body.isEmpty()) throw new CustomException(ErrorCode.STUDY_INFO_NOT_FOUND);
 
         return ResponseEntity.ok(body);
@@ -249,7 +243,7 @@ public class UserService {
             studyInfos = studyInfoRepository.findByUser(user);
         }
 
-        List<StudyInfoResponse> body = studyInfos.stream().map(studyInfoMapper::toDto).toList();
+        List<StudyInfoResponse> body = studyInfos.stream().map(StudyInfoMapper::toDto).toList();
         if (body.isEmpty()) throw new CustomException(ErrorCode.STUDY_INFO_NOT_FOUND);
 
         return ResponseEntity.ok(body);

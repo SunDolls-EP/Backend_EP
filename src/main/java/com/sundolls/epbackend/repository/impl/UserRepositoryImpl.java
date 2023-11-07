@@ -25,12 +25,10 @@ import static com.sundolls.epbackend.entity.QUser.user;
 public class UserRepositoryImpl extends QuerydslRepositorySupport implements UserRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
-    private final UserMapper userMapper;
 
-    public UserRepositoryImpl(JPAQueryFactory queryFactory, UserMapper userMapper) {
+    public UserRepositoryImpl(JPAQueryFactory queryFactory) {
         super(QUser.class);
         this.queryFactory = queryFactory;
-        this.userMapper = userMapper;
     }
 
     @Override
@@ -58,7 +56,7 @@ public class UserRepositoryImpl extends QuerydslRepositorySupport implements Use
                 .limit(limitTo50(limit));
 
         List<User> result = query.fetch();
-        return result.stream().map(userMapper::toDto).toList();
+        return result.stream().map(UserMapper::toDto).toList();
     }
 
     @Override
